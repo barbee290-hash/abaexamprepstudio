@@ -14,9 +14,9 @@ DirectoryIndex index.html index.php
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresByType text/html "access plus 0 seconds"
-  ExpiresByType text/css "access plus 7 days"
-  ExpiresByType application/javascript "access plus 7 days"
-  ExpiresByType text/javascript "access plus 7 days"
+  ExpiresByType text/css "access plus 1 hour"
+  ExpiresByType application/javascript "access plus 1 hour"
+  ExpiresByType text/javascript "access plus 1 hour"
   ExpiresByType image/svg+xml "access plus 30 days"
   ExpiresByType image/png "access plus 30 days"
 </IfModule>
@@ -30,3 +30,6 @@ DirectoryIndex index.html index.php
 
 # Don't list folder contents
 Options -Indexes
+
+# Hide dot-files (.git, .gitignore, etc.) from visitors; keep .well-known for SSL checks
+RedirectMatch 404 "(^|/)\.(?!well-known)"
