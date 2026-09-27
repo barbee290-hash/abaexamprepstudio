@@ -1,0 +1,5 @@
+# Local-only files that must never be published
+.claude/
+*.log
+Thumbs.db
+desktop.ini

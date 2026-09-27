@@ -1,0 +1,32 @@
+# ABA Exam Prep Studio — Apache settings for Hostinger
+
+ErrorDocument 404 /404.html
+
+# Serve the site's homepage ahead of Hostinger's placeholder page (default.php)
+DirectoryIndex index.html index.php
+
+# Compress text files
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript text/javascript image/svg+xml application/json text/plain application/xml
+</IfModule>
+
+# Browser caching (HTML always revalidates so updates show right away)
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType text/javascript "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+</IfModule>
+
+# Basic security headers
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# Don't list folder contents
+Options -Indexes
