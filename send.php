@@ -100,8 +100,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Honeypot: humans never see or fill this field. Pretend success for bots.
-if (field('website', 200) !== '') respond(true);
+// Honeypot: humans never see or fill this field. Pretend success for bots, but keep
+// a copy in the private backup file in case browser autofill tripped it.
+// ('website' is the old field name, still sent by cached copies of the pages.)
+if (field('zx_check', 200) !== '' || field('website', 200) !== '') {
+    @file_put_contents(
+        $privateDir . '/form-backup.txt',
+        '==== ' . gmdate('Y-m-d H:i') . " UTC | BLOCKED AS POSSIBLE BOT ($formType) ====\n"
+            . 'Email: ' . oneLine(field('email', 200)) . "\n" . field('message', 2000) . "\n\n",
+        FILE_APPEND | LOCK_EX
+    );
+    respond(true);
+}
 
 // Too-fast submissions are almost always bots
 $started = (int) field('started', 20);
@@ -130,8 +140,12 @@ if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) respond(false, 
 
 if ($formType === 'waitlist') {
     if ($email === '') respond(false, 'Please enter your email address.');
-    $subject = 'Full-exam waitlist sign-up';
-    $body = "New waitlist sign-up for full-length RBT exams.\n\nEmail: $email\n";
+    $subject = 'New waitlist sign-up - Full paid mock exam - add to spreadsheet';
+    $body  = "New customer for the full-length paid RBT mock exam.\n";
+    $body .= "Add them to your waitlist spreadsheet.\n\n";
+    $body .= "Email:     $email\n";
+    $body .= 'Signed up: ' . gmdate('Y-m-d H:i') . " UTC\n\n";
+    $body .= "Tip: click Reply to email this customer directly.\n";
 } else {
     $len = function_exists('mb_strlen') ? mb_strlen($message) : strlen($message);
     if ($len < 10) respond(false, 'Please write a slightly longer comment.');
