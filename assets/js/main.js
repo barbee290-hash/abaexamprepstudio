@@ -17,7 +17,7 @@
   var toggle = document.querySelector(".nav-toggle");
   var nav = document.getElementById("primary-nav");
   if (toggle && nav) {
-    var mq = window.matchMedia("(max-width: 1140px)");
+    var mq = window.matchMedia("(max-width: 1220px)");
 
     function setOpen(open) {
       toggle.setAttribute("aria-expanded", String(open));

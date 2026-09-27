@@ -472,7 +472,8 @@
   });
 
   // Update title/description for the chosen set
-  document.title = title() + " | ABA Exam Prep Studio";
+  // Keep tab titles under 60 characters for search results
+  document.title = (isMock ? "Free RBT Mock Exam (20 Questions)" : "RBT Section " + setKey + " Practice Quiz") + " | ABA Exam Prep Studio";
   var crumb = document.getElementById("crumb-current");
   if (crumb) crumb.textContent = isMock ? "Free Mock Exam" : "Section " + setKey + " Quiz";
 
