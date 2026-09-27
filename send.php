@@ -140,6 +140,18 @@ if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) respond(false, 
 
 if ($formType === 'waitlist') {
     if ($email === '') respond(false, 'Please enter your email address.');
+    // Running sign-up list for Excel / Google Sheets (private, above public_html)
+    $csvFile = $privateDir . '/waitlist-signups.csv';
+    $isNew = !file_exists($csvFile);
+    if ($fh = @fopen($csvFile, 'a')) {
+        flock($fh, LOCK_EX);
+        if ($isNew) fputcsv($fh, ['Date (UTC)', 'Time (UTC)', 'Email', 'Product']);
+        // Leading = + - @ would be read as a formula by spreadsheets
+        $safeEmail = preg_match('/^[=+\-@]/', $email) ? "'" . $email : $email;
+        fputcsv($fh, [gmdate('Y-m-d'), gmdate('H:i'), $safeEmail, 'Full paid mock exam']);
+        flock($fh, LOCK_UN);
+        fclose($fh);
+    }
     $subject = 'New waitlist sign-up - Full paid mock exam - add to spreadsheet';
     $body  = "New customer for the full-length paid RBT mock exam.\n";
     $body .= "Add them to your waitlist spreadsheet.\n\n";
