@@ -95,23 +95,28 @@
     </div>
   </section>
 
-  <section class="section" aria-labelledby="waitlist-title">
+  <section class="section" id="waitlist" aria-labelledby="waitlist-title">
     <div class="container container-narrow">
       <div class="feature-exam reveal" style="grid-template-columns:1fr">
         <div style="position:relative;z-index:1">
-          <span class="eyebrow">Join the waitlist</span>
-          <h2 id="waitlist-title">Be the first to know</h2>
-          <p class="lead" style="color:#CFE0DC">Enter your email and we’ll send one message when full-length exams are ready. No spam, ever.</p>
-          <form class="inline-form" action="send.php" method="post" data-ajax data-success="You’re on the list! We’ll email you when full-length exams launch." novalidate>
+          <span class="eyebrow">30 free spots</span>
+          <h2 id="waitlist-title">Help shape our final RBT mock exams!</h2>
+          <p class="lead" style="color:#CFE0DC">The first 30 people to sign up get our full 85-question mock exam for free in exchange for their honest feedback. We’ll email you with next steps. No spam, ever.</p>
+          <form class="inline-form" action="send.php" method="post" data-ajax data-success="You’re signed up! If you’re one of the first 30, we’ll email you your free mock exam and how to share your feedback." novalidate>
             <input type="hidden" name="form" value="waitlist">
             <input type="hidden" name="started" value="">
+            <input type="hidden" name="source" value="full-exams-page">
+            <div class="field">
+              <label for="w-name" class="sr-only">First name (optional)</label>
+              <input type="text" id="w-name" name="name" placeholder="First name (optional)" autocomplete="given-name" maxlength="100">
+            </div>
             <div class="hp" aria-hidden="true"><label for="w-zx">Leave this field empty</label><input type="text" id="w-zx" name="zx_check" tabindex="-1" autocomplete="new-password" data-lpignore="true" data-1p-ignore></div>
             <div class="field">
               <label for="w-email" class="sr-only">Email address</label>
               <input type="email" id="w-email" name="email" placeholder="you@example.com" autocomplete="email" required data-validate>
               <span class="error-msg" style="color:#FFD2C6;margin-top:6px">Please enter a valid email address.</span>
             </div>
-            <button type="submit" class="btn btn-primary">Notify me <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></button>
+            <button type="submit" class="btn btn-primary">Claim a free spot <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></button>
             <div class="form-status" role="status" aria-live="polite" style="flex-basis:100%"></div>
           </form>
           <p class="form-note" style="color:#A9C2BF">We’ll only use your email to tell you about full-length exams. See our <a href="privacy.html" style="color:var(--sage)">privacy policy</a>.</p>

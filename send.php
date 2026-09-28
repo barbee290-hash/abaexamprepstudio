@@ -141,22 +141,35 @@ if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) respond(false, 
 if ($formType === 'waitlist') {
     if ($email === '') respond(false, 'Please enter your email address.');
     // Running sign-up list for Excel / Google Sheets (private, above public_html)
+    // Where they signed up from, e.g. "quiz-c", "mock", "practice-test", "full-exams-page"
+    $source = preg_replace('/[^a-z0-9-]/', '', strtolower(field('source', 30)));
+    if ($source === '') $source = 'full-exams-page';
     $csvFile = $privateDir . '/waitlist-signups.csv';
     $isNew = !file_exists($csvFile);
+    $existing = $isNew ? '' : (string) @file_get_contents($csvFile);
+    $repeat = $existing !== '' && stripos($existing, ',' . $email . ',') !== false;
+    // Sign-up number = earlier sign-ups (header and repeat rows not counted) + this one
+    $rows = $existing === '' ? [] : array_slice(explode("\n", trim($existing)), 1);
+    $number = 1 + count(array_filter($rows, function ($r) { return stripos($r, 'Repeat sign-up') === false; }));
     if ($fh = @fopen($csvFile, 'a')) {
         flock($fh, LOCK_EX);
-        if ($isNew) fputcsv($fh, ['Date (UTC)', 'Time (UTC)', 'Email', 'Product']);
+        if ($isNew) fputcsv($fh, ['#', 'Date (UTC)', 'Time (UTC)', 'Email', 'First name', 'Signed up from', 'Offer']);
         // Leading = + - @ would be read as a formula by spreadsheets
-        $safeEmail = preg_match('/^[=+\-@]/', $email) ? "'" . $email : $email;
-        fputcsv($fh, [gmdate('Y-m-d'), gmdate('H:i'), $safeEmail, 'Full paid mock exam']);
+        $cell = function ($v) { return preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v; };
+        $offer = $repeat ? 'Repeat sign-up' : ($number <= 30 ? 'Free beta mock exam (first 30)' : 'Waitlist (after first 30)');
+        fputcsv($fh, [$repeat ? '' : $number, gmdate('Y-m-d'), gmdate('H:i'), $cell($email), $cell($name), $source, $offer]);
         flock($fh, LOCK_UN);
         fclose($fh);
     }
-    $subject = 'New waitlist sign-up - Full paid mock exam - add to spreadsheet';
-    $body  = "New customer for the full-length paid RBT mock exam.\n";
-    $body .= "Add them to your waitlist spreadsheet.\n\n";
-    $body .= "Email:     $email\n";
-    $body .= 'Signed up: ' . gmdate('Y-m-d H:i') . " UTC\n\n";
+    $subject = $repeat ? 'Repeat sign-up - Free beta mock exam'
+        : ($number <= 30 ? "Free beta tester #$number of 30 - add to spreadsheet" : "New waitlist sign-up #$number (after first 30) - add to spreadsheet");
+    $body  = $repeat ? "This email address has signed up before (no new spot used).\n\n"
+        : ($number <= 30 ? "New beta tester #$number of 30 for the free full-length RBT mock exam.\nThey get the full 85-question mock exam free in exchange for honest feedback.\n\n"
+                         : "New sign-up #$number. The 30 free spots are filled, so this person is on the regular waitlist.\n\n");
+    $body .= 'Name:        ' . ($name !== '' ? $name : '(not given)') . "\n";
+    $body .= "Email:       $email\n";
+    $body .= "Signed up:   " . gmdate('Y-m-d H:i') . " UTC\n";
+    $body .= "Signed up from: $source\n\n";
     $body .= "Tip: click Reply to email this customer directly.\n";
 } else {
     $len = function_exists('mb_strlen') ? mb_strlen($message) : strlen($message);

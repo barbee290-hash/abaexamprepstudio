@@ -320,6 +320,16 @@
   }
 
   /* ---------- results ---------- */
+  // Beta-tester invite: free full-length mock exam for the first 30 sign-ups
+  function founderOffer(from) {
+    return '<aside class="founder-offer" aria-label="Free mock exam for beta testers">' +
+      '<div><span class="tag-new">30 free spots</span>' +
+      "<h2>Help shape our final RBT mock exams!</h2>" +
+      "<p>The first 30 people to sign up get our full 85-question mock exam for free in exchange for their honest feedback.</p></div>" +
+      '<a class="btn btn-primary" href="full-exams.html?from=' + from + '#waitlist">Claim a free spot ' + icon("i-arrow", "arrow") + "</a>" +
+    "</aside>";
+  }
+
   function finish(timedOut) {
     stopTimer();
     state.done = true;
@@ -364,6 +374,8 @@
           "</div>" +
         "</div>" +
       "</div>";
+
+    html += founderOffer(isMock ? "mock" : "quiz-" + setKey.toLowerCase());
 
     html += '<h2 style="font-size:1.5rem">' + (isMock ? "Score by exam section" : "Score by task item") + '</h2><div class="breakdown">';
     groupOrder.forEach(function (g) {

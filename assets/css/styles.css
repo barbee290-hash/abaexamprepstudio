@@ -405,6 +405,14 @@ body.nav-locked { overflow: hidden; }
 .callout.coral { background: var(--coral-50); border-left-color: var(--coral); }
 .callout.coral svg { color: var(--coral-600); }
 
+/* Founding-member invite (quiz results, practice test) */
+.founder-offer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px 32px; background: var(--coral-50); border: 1.5px solid var(--coral); border-radius: var(--radius); padding: 26px 30px; margin: 8px 0 44px; }
+.founder-offer > div { flex: 1 1 340px; }
+.founder-offer h2 { font-size: 1.35rem; margin: 10px 0 6px; }
+.founder-offer p { margin: 0; }
+.founder-offer .btn { flex: none; }
+.pt-score + .founder-offer { margin-top: 20px; }
+
 /* FAQ */
 .faq { display: grid; gap: 14px; }
 .faq details { background: var(--white); border-radius: var(--radius); border: 1px solid rgba(23,63,79,.08); box-shadow: var(--shadow-sm); overflow: hidden; transition: box-shadow .3s; }

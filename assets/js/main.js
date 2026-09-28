@@ -157,6 +157,10 @@
   document.querySelectorAll("form[data-ajax]").forEach(function (form) {
     var started = form.querySelector("input[name='started']");
     if (started) started.value = String(Math.floor(Date.now() / 1000));
+    // Which quiz sent them here (full-exams.html?from=quiz-c)
+    var source = form.querySelector("input[name='source']");
+    var from = /[?&]from=([A-Za-z0-9-]{1,20})/.exec(location.search);
+    if (source && from) source.value = from[1];
 
     form.querySelectorAll("[data-validate]").forEach(function (input) {
       input.addEventListener("input", function () {
