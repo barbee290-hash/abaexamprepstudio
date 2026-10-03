@@ -185,7 +185,7 @@
       if (isLocal) {
         setTimeout(function () {
           done();
-          showStatus(box, "test", "<strong>Test mode:</strong> the form works, but nothing was sent because this is a local preview. On thestimuluscontrolroom.com this message will be emailed to contact@abaexamprepstudio.com.");
+          showStatus(box, "test", "<strong>Test mode:</strong> the form works, but nothing was sent because this is a local preview. On thestimuluscontrolroom.com this message will be emailed to contact@thestimuluscontrolroom.com.");
           form.reset();
           if (started) started.value = String(Math.floor(Date.now() / 1000));
         }, 600);
@@ -204,12 +204,12 @@
             showStatus(box, "success", form.getAttribute("data-success") || "Thank you! Your message was sent.");
             form.reset();
           } else {
-            showStatus(box, "error", (data && data.error ? data.error + " " : "Something went wrong. ") + 'You can also email us at <a href="mailto:contact@abaexamprepstudio.com">contact@abaexamprepstudio.com</a>.');
+            showStatus(box, "error", (data && data.error ? data.error + " " : "Something went wrong. ") + 'You can also email us at <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a>.');
           }
         })
         .catch(function () {
           done();
-          showStatus(box, "error", 'We couldn’t reach the server. Please try again, or email <a href="mailto:contact@abaexamprepstudio.com">contact@abaexamprepstudio.com</a>.');
+          showStatus(box, "error", 'We couldn’t reach the server. Please try again, or email <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a>.');
         });
     });
   });
@@ -219,6 +219,6 @@
   if (params.has("sent")) {
     var form = document.querySelector("form[data-ajax]");
     if (form) showStatus(statusBox(form), params.get("sent") === "1" ? "success" : "error",
-      params.get("sent") === "1" ? (form.getAttribute("data-success") || "Thank you! Your message was sent.") : "Sorry, your message could not be sent. Please email contact@abaexamprepstudio.com.");
+      params.get("sent") === "1" ? (form.getAttribute("data-success") || "Thank you! Your message was sent.") : "Sorry, your message could not be sent. Please email contact@thestimuluscontrolroom.com.");
   }
 })();

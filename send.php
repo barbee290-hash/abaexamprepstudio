@@ -11,9 +11,9 @@
  * smtp-password.txt one folder ABOVE public_html (not reachable from the web).
  */
 
-const TO_EMAIL   = 'contact@abaexamprepstudio.com';
+const TO_EMAIL   = 'contact@thestimuluscontrolroom.com';
 // Must be a real mailbox on this domain, or Hostinger may reject or spam-filter the message
-const FROM_EMAIL = 'contact@abaexamprepstudio.com';
+const FROM_EMAIL = 'contact@thestimuluscontrolroom.com';
 const SITE_NAME  = 'The Stimulus Control Room';
 const SMTP_HOST  = 'smtp.hostinger.com';
 const SMTP_PORT  = 465;        // implicit SSL
