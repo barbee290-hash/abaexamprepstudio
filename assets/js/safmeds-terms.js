@@ -1,5 +1,5 @@
 /*
-  ABA Exam Prep Studio — SAFMEDS deck
+  The Stimulus Control Room — SAFMEDS deck
   Original term/definition cards written for this site, grouped by the six
   domains of the RBT® Test Content Outline (3rd ed.). Keep definitions short
   so they fit on a 3" x 6" card.

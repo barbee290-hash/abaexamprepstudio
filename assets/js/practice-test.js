@@ -1,4 +1,4 @@
-/* ABA Exam Prep Studio — free RBT practice test page.
+/* The Stimulus Control Room — free RBT practice test page.
    Answers and explanations are in the HTML (so search engines can read them);
    this script only adds click-to-check and a running score. */
 (function () {

@@ -1,4 +1,4 @@
-/* ABA Exam Prep Studio — site-wide behavior */
+/* The Stimulus Control Room — site-wide behavior */
 (function () {
   "use strict";
   document.documentElement.classList.remove("no-js");
@@ -17,7 +17,7 @@
   var toggle = document.querySelector(".nav-toggle");
   var nav = document.getElementById("primary-nav");
   if (toggle && nav) {
-    var mq = window.matchMedia("(max-width: 1220px)");
+    var mq = window.matchMedia("(max-width: 1280px)");
 
     function setOpen(open) {
       toggle.setAttribute("aria-expanded", String(open));
@@ -185,7 +185,7 @@
       if (isLocal) {
         setTimeout(function () {
           done();
-          showStatus(box, "test", "<strong>Test mode:</strong> the form works, but nothing was sent because this is a local preview. On abaexamprepstudio.com this message will be emailed to contact@abaexamprepstudio.com.");
+          showStatus(box, "test", "<strong>Test mode:</strong> the form works, but nothing was sent because this is a local preview. On thestimuluscontrolroom.com this message will be emailed to contact@abaexamprepstudio.com.");
           form.reset();
           if (started) started.value = String(Math.floor(Date.now() / 1000));
         }, 600);

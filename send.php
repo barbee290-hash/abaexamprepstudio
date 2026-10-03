@@ -1,6 +1,6 @@
 <?php
 /**
- * ABA Exam Prep Studio — form handler
+ * The Stimulus Control Room — form handler
  * Emails feedback comments and waitlist sign-ups to the site owner.
  * Sends through the contact@ mailbox over SMTP (Hostinger), falls back to
  * PHP mail(), and as a last resort saves the message to a private file
@@ -14,7 +14,7 @@
 const TO_EMAIL   = 'contact@abaexamprepstudio.com';
 // Must be a real mailbox on this domain, or Hostinger may reject or spam-filter the message
 const FROM_EMAIL = 'contact@abaexamprepstudio.com';
-const SITE_NAME  = 'ABA Exam Prep Studio';
+const SITE_NAME  = 'The Stimulus Control Room';
 const SMTP_HOST  = 'smtp.hostinger.com';
 const SMTP_PORT  = 465;        // implicit SSL
 const MAX_PER_WINDOW = 5;      // submissions allowed per IP...
@@ -83,7 +83,7 @@ function smtpSend($password, $to, $encodedSubject, $body, array $headers) {
             'Date: ' . date('r'),
             'To: <' . $to . '>',
             'Subject: ' . $encodedSubject,
-            'Message-ID: <' . bin2hex(random_bytes(12)) . '@abaexamprepstudio.com>',
+            'Message-ID: <' . bin2hex(random_bytes(12)) . '@thestimuluscontrolroom.com>',
         ], $headers);
         $text = preg_replace('/\r\n|\r|\n/', "\r\n", $body);
         $text = preg_replace('/^\./m', '..', $text); // dot-stuffing

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ABA Exam Prep Studio — styles
+   The Stimulus Control Room — styles
    ========================================================================== */
 
 :root {
@@ -150,25 +150,25 @@ sup.reg { font-family: var(--font-body); font-size: .32em; font-weight: 700; ver
 }
 .site-header.is-scrolled { border-bottom-color: rgba(23,63,79,.08); box-shadow: 0 6px 24px -18px rgba(23,63,79,.4); }
 .site-header.is-scrolled::before { background: rgba(250, 248, 243, .94); }
-.header-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.header-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: var(--navy); flex: none; }
 .brand:hover { color: var(--navy); }
 .brand-mark { width: 42px; height: 42px; flex: none; transition: transform .4s var(--ease); }
 .brand:hover .brand-mark { transform: rotate(-8deg) scale(1.05); }
-.brand-name { font-family: var(--font-display); font-weight: 600; font-size: 1.22rem; line-height: 1; letter-spacing: -.01em; }
+.brand-name { font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; line-height: 1; letter-spacing: -.01em; }
 .brand-name small { display: block; font-family: var(--font-body); font-size: .64rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--teal); margin-top: 5px; }
 
 .primary-nav { display: flex; align-items: center; gap: 6px; }
 .nav-list { display: flex; align-items: center; gap: 2px; list-style: none; margin: 0; padding: 0; }
 .nav-list a {
-  position: relative; display: block; padding: 10px 12px; border-radius: 999px; white-space: nowrap;
+  position: relative; display: block; padding: 10px 9px; border-radius: 999px; white-space: nowrap;
   font-weight: 600; font-size: .96rem; color: var(--navy); text-decoration: none;
   transition: background-color .2s, color .2s;
 }
 .nav-list a:hover { background: rgba(23,107,107,.08); color: var(--teal); }
 .nav-list a[aria-current="page"] { color: var(--teal); }
 .nav-list a[aria-current="page"]::after { content: ""; position: absolute; left: 50%; bottom: 3px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--coral); }
-.nav-cta { margin-left: 10px; }
+.nav-cta { margin-left: 4px; }
 .nav-home { display: none; }
 
 .nav-toggle {
@@ -184,7 +184,7 @@ sup.reg { font-family: var(--font-body); font-size: .32em; font-weight: 700; ver
 .nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
 .nav-toggle[aria-expanded="true"] span:nth-child(3) { top: 23px; transform: rotate(-45deg); }
 
-@media (max-width: 1220px) {
+@media (max-width: 1280px) {
   .nav-toggle { display: block; }
   .primary-nav {
     position: fixed; inset: 0; z-index: 110;

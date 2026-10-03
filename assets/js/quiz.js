@@ -1,4 +1,4 @@
-/* ABA Exam Prep Studio — quiz engine */
+/* The Stimulus Control Room — quiz engine */
 (function () {
   "use strict";
 
@@ -485,7 +485,7 @@
 
   // Update title/description for the chosen set
   // Keep tab titles under 60 characters for search results
-  document.title = (isMock ? "Free RBT Mock Exam (20 Questions)" : "RBT Section " + setKey + " Practice Quiz") + " | ABA Exam Prep Studio";
+  document.title = (isMock ? "Free RBT Mock Exam (20 Questions) | Stimulus Control Room" : "RBT Section " + setKey + " Practice Quiz | The Stimulus Control Room");
   var crumb = document.getElementById("crumb-current");
   if (crumb) crumb.textContent = isMock ? "Free Mock Exam" : "Section " + setKey + " Quiz";
 

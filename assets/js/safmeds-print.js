@@ -1,4 +1,4 @@
-/* ABA Exam Prep Studio — printable SAFMEDS cards (3" x 6") */
+/* The Stimulus Control Room — printable SAFMEDS cards (3" x 6") */
 (function () {
   "use strict";
 
@@ -25,11 +25,11 @@
 
   function front(c) {
     return '<div class="pcard pcard-front"><span class="pc-tag">' + c.s + " · " + esc(SECTIONS[c.s]) + '</span>' +
-      '<span class="pc-term">' + esc(c.t) + '</span><span class="pc-brand">ABA Exam Prep Studio · SAFMEDS</span></div>';
+      '<span class="pc-term">' + esc(c.t) + '</span><span class="pc-brand">The Stimulus Control Room · SAFMEDS</span></div>';
   }
   function back(c) {
     return '<div class="pcard pcard-back"><span class="pc-tag">' + esc(c.t) + '</span>' +
-      '<span class="pc-def">' + esc(c.d) + '</span><span class="pc-brand">abaexamprepstudio.com</span></div>';
+      '<span class="pc-def">' + esc(c.d) + '</span><span class="pc-brand">thestimuluscontrolroom.com</span></div>';
   }
 
   function render() {

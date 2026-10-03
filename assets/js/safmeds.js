@@ -1,4 +1,4 @@
-/* ABA Exam Prep Studio — SAFMEDS timing (Say All Fast, Minute Every Day, Shuffled) */
+/* The Stimulus Control Room — SAFMEDS timing (Say All Fast, Minute Every Day, Shuffled) */
 (function () {
   "use strict";
 

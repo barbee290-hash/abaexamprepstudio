@@ -1,5 +1,5 @@
 /*
-  ABA Exam Prep Studio — practice question bank
+  The Stimulus Control Room — practice question bank
   Original questions written for this site, organized by the six domains of the
   RBT® Test Content Outline (3rd ed.), which applies to exams from January 1, 2026.
 
