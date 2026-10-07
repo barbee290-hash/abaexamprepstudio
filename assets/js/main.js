@@ -201,7 +201,7 @@
         .then(function (data) {
           done();
           if (data && data.ok) {
-            showStatus(box, "success", form.getAttribute("data-success") || "Thank you! Your message was sent.");
+            showStatus(box, "success", data.message || form.getAttribute("data-success") || "Thank you! Your message was sent.");
             form.reset();
           } else {
             showStatus(box, "error", (data && data.error ? data.error + " " : "Something went wrong. ") + 'You can also email us at <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a>.');

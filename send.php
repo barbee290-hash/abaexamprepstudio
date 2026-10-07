@@ -7,31 +7,41 @@
  * outside public_html so nothing is lost. Returns JSON for fetch() requests,
  * or redirects back to the form page when JavaScript is off.
  *
- * The mailbox password is NOT in this file or in GitHub. It lives in
- * smtp-password.txt one folder ABOVE public_html (not reachable from the web).
+ * Beta mock exam: the first BETA_SPOTS waitlist sign-ups are emailed the
+ * welcome letter with the mock exam PDF attached. Later sign-ups get a
+ * "spots are filled, you're on the waitlist" email instead.
+ *
+ * Private files live one folder ABOVE public_html (not reachable from the web),
+ * and are NOT in GitHub:
+ *   smtp-password.txt          the contact@ mailbox password
+ *   beta-exams/<BETA_EXAM_FILE> the mock exam PDF sent to beta testers
  */
 
 const TO_EMAIL   = 'contact@thestimuluscontrolroom.com';
 // Must be a real mailbox on this domain, or Hostinger may reject or spam-filter the message
 const FROM_EMAIL = 'contact@thestimuluscontrolroom.com';
 const SITE_NAME  = 'The Stimulus Control Room';
+const SITE_URL   = 'thestimuluscontrolroom.com';
 const SMTP_HOST  = 'smtp.hostinger.com';
 const SMTP_PORT  = 465;        // implicit SSL
 const MAX_PER_WINDOW = 5;      // submissions allowed per IP...
 const WINDOW_SECONDS = 600;    // ...in this many seconds
 const MIN_FILL_SECONDS = 3;    // bots submit instantly
+const BETA_SPOTS = 30;
+const BETA_EXAM_FILE = 'RBT_Mock_Exam_1.pdf';
 
 $privateDir = dirname(__DIR__); // folder above public_html
 $wantsJson = isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false;
 $formType  = (isset($_POST['form']) && $_POST['form'] === 'waitlist') ? 'waitlist' : 'feedback';
 $backPage  = $formType === 'waitlist' ? 'full-exams.html' : 'feedback.html';
+$userMessage = ''; // optional success message shown on the page instead of the form's default
 
 function respond($ok, $error = '', $via = '') {
-    global $wantsJson, $backPage;
+    global $wantsJson, $backPage, $userMessage;
     if ($wantsJson) {
         header('Content-Type: application/json; charset=utf-8');
         if (!$ok) http_response_code(400);
-        echo json_encode(['ok' => $ok, 'error' => $error, 'via' => $via]);
+        echo json_encode(['ok' => $ok, 'error' => $error, 'via' => $via, 'message' => $ok ? $userMessage : '']);
     } else {
         header('Location: ' . $backPage . '?sent=' . ($ok ? '1' : '0'), true, 303);
     }
@@ -47,6 +57,10 @@ function field($key, $max) {
 // Header-safe single-line text (prevents email header injection)
 function oneLine($v) {
     return trim(preg_replace('/[\r\n\t]+/', ' ', $v));
+}
+
+function encodeSubject($s) {
+    return '=?UTF-8?B?' . base64_encode($s) . '?=';
 }
 
 // Read one full SMTP reply (handles multi-line "250-..." replies); returns the status code
@@ -83,7 +97,7 @@ function smtpSend($password, $to, $encodedSubject, $body, array $headers) {
             'Date: ' . date('r'),
             'To: <' . $to . '>',
             'Subject: ' . $encodedSubject,
-            'Message-ID: <' . bin2hex(random_bytes(12)) . '@thestimuluscontrolroom.com>',
+            'Message-ID: <' . bin2hex(random_bytes(12)) . '@' . SITE_URL . '>',
         ], $headers);
         $text = preg_replace('/\r\n|\r|\n/', "\r\n", $body);
         $text = preg_replace('/^\./m', '..', $text); // dot-stuffing
@@ -93,6 +107,69 @@ function smtpSend($password, $to, $encodedSubject, $body, array $headers) {
     @fwrite($fp, "QUIT\r\n");
     fclose($fp);
     return $ok;
+}
+
+// Email a visitor from contact@ (plain text, optional PDF attachment). Returns true on success.
+function emailVisitor($password, $to, $subject, $text, $attachPath = '') {
+    $headers = [
+        'From: ' . SITE_NAME . ' <' . FROM_EMAIL . '>',
+        'Reply-To: ' . FROM_EMAIL,
+        'MIME-Version: 1.0',
+    ];
+    if ($attachPath === '') {
+        $headers[] = 'Content-Type: text/plain; charset=UTF-8';
+        $headers[] = 'Content-Transfer-Encoding: 8bit';
+        $body = $text;
+    } else {
+        $boundary = 'scr_' . bin2hex(random_bytes(8));
+        $headers[] = 'Content-Type: multipart/mixed; boundary="' . $boundary . '"';
+        $body  = "--$boundary\r\n";
+        $body .= "Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n";
+        $body .= chunk_split(base64_encode(str_replace("\n", "\r\n", str_replace("\r\n", "\n", $text))));
+        $body .= "--$boundary\r\n";
+        $body .= 'Content-Type: application/pdf; name="' . basename($attachPath) . "\"\r\n";
+        $body .= "Content-Transfer-Encoding: base64\r\n";
+        $body .= 'Content-Disposition: attachment; filename="' . basename($attachPath) . "\"\r\n\r\n";
+        $body .= chunk_split(base64_encode((string) file_get_contents($attachPath)));
+        $body .= "--$boundary--";
+    }
+    return smtpSend($password, $to, encodeSubject($subject), $body, $headers);
+}
+
+function signature() {
+    return "Best regards,\n\nJeanne Barbee, MS, BCBA, LBA\nFounder, " . SITE_NAME . "\n" . FROM_EMAIL . "\nhttps://" . SITE_URL . "\n";
+}
+
+// Welcome letter for beta testers (from "Welcome Beta Full Mock Exam.docx")
+function betaWelcomeText($name) {
+    $hi = $name !== '' ? "Hi $name," : 'Hi there,';
+    return $hi . "\n\n"
+        . "Thank you so much for volunteering to be a beta tester for The Stimulus Control Room's full RBT mock exam! "
+        . "Your feedback is invaluable in making sure this resource is as clear, realistic, and effective as possible.\n\n"
+        . "To help capture your genuine test-taking experience and initial instincts before seeing the results, "
+        . "we are splitting the feedback process into two brief stages:\n\n"
+        . "1. Attached is the RBT Mock Exam (Questions Only) along with an Answer Sheet. "
+        . "Please complete the exam and reply to this email with your completed answer sheet attached.\n\n"
+        . "2. Once I receive your answer sheet, I will reply with a short Phase 1 Survey about your overall "
+        . "impression of the questions, difficulty level, and exam flow.\n\n"
+        . "3. As soon as you return that brief survey, I will send over your full Answer Key & Detailed Explanations, "
+        . "along with your calculated score so you don't have to score it yourself!\n\n"
+        . "Thank you again for your time and insight. Good luck with the exam, and I look forward to receiving "
+        . "your completed answer sheet!\n\n"
+        . signature();
+}
+
+function waitlistFullText($name) {
+    $hi = $name !== '' ? "Hi $name," : 'Hi there,';
+    return $hi . "\n\n"
+        . "Thank you for signing up to help shape our full-length RBT mock exams! We're sorry, but our beta testing "
+        . "is now complete, and all " . BETA_SPOTS . " free beta tester spots have been filled.\n\n"
+        . "The Stimulus Control Room has noted your interest in beta testing our future mock exams. Once the mock exam "
+        . "is finalized, we'll send out a notification, and you'll be among the first to know. As a thank-you, you'll "
+        . "also receive our Founders Discount of 25% off.\n\n"
+        . "In the meantime, you can keep practicing with our free RBT practice test, section quizzes, and SAFMEDS "
+        . "flashcards at https://" . SITE_URL . "\n\n"
+        . signature();
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -138,10 +215,13 @@ $message = field('message', 5000);
 
 if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) respond(false, 'Please enter a valid email address.');
 
+$passFile = $privateDir . '/smtp-password.txt';
+$password = is_readable($passFile) ? trim((string) @file_get_contents($passFile)) : '';
+
 if ($formType === 'waitlist') {
     if ($email === '') respond(false, 'Please enter your email address.');
     // Running sign-up list for Excel / Google Sheets (private, above public_html)
-    // Where they signed up from, e.g. "quiz-c", "mock", "practice-test", "full-exams-page"
+    // Where they signed up from, e.g. "quiz-c", "mock", "practice-test", "youtube"
     $source = preg_replace('/[^a-z0-9-]/', '', strtolower(field('source', 30)));
     if ($source === '') $source = 'full-exams-page';
     $csvFile = $privateDir . '/waitlist-signups.csv';
@@ -151,25 +231,49 @@ if ($formType === 'waitlist') {
     // Sign-up number = earlier sign-ups (header and repeat rows not counted) + this one
     $rows = $existing === '' ? [] : array_slice(explode("\n", trim($existing)), 1);
     $number = 1 + count(array_filter($rows, function ($r) { return stripos($r, 'Repeat sign-up') === false; }));
+    $isBeta = !$repeat && $number <= BETA_SPOTS;
     if ($fh = @fopen($csvFile, 'a')) {
         flock($fh, LOCK_EX);
         if ($isNew) fputcsv($fh, ['#', 'Date (UTC)', 'Time (UTC)', 'Email', 'First name', 'Signed up from', 'Offer']);
         // Leading = + - @ would be read as a formula by spreadsheets
         $cell = function ($v) { return preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v; };
-        $offer = $repeat ? 'Repeat sign-up' : ($number <= 30 ? 'Free beta mock exam (first 30)' : 'Waitlist (after first 30)');
+        $offer = $repeat ? 'Repeat sign-up' : ($isBeta ? 'Free beta mock exam (first ' . BETA_SPOTS . ')' : 'Waitlist + 25% Founders Discount');
         fputcsv($fh, [$repeat ? '' : $number, gmdate('Y-m-d'), gmdate('H:i'), $cell($email), $cell($name), $source, $offer]);
         flock($fh, LOCK_UN);
         fclose($fh);
     }
+
+    // Email the visitor: beta testers get the welcome letter + exam PDF; later sign-ups get a waitlist note
+    $examPath = $privateDir . '/beta-exams/' . BETA_EXAM_FILE;
+    $visitorStatus = 'Not emailed (repeat sign-up).';
+    if ($isBeta) {
+        if (!is_readable($examPath)) {
+            $visitorStatus = 'NOT SENT: the exam PDF is missing from the beta-exams folder on the server. Please email it to them yourself.';
+        } elseif ($password !== '' && emailVisitor($password, $email, 'Your free RBT Mock Exam from ' . SITE_NAME, betaWelcomeText($name), $examPath)) {
+            $visitorStatus = 'Welcome letter + ' . BETA_EXAM_FILE . ' sent to them automatically.';
+            $userMessage = "You're beta tester #$number! We just emailed you the mock exam. Check your inbox (and your spam folder, just in case).";
+        } else {
+            $visitorStatus = 'NOT SENT: the email could not be sent. Please email the exam to them yourself.';
+        }
+        if ($userMessage === '') $userMessage = "You're beta tester #$number! We'll email you the mock exam shortly.";
+    } elseif (!$repeat) {
+        $sentFull = $password !== '' && emailVisitor($password, $email, "Beta testing is complete: your 25% Founders Discount - " . SITE_NAME, waitlistFullText($name));
+        $visitorStatus = $sentFull ? '"Beta testing complete + 25% Founders Discount" email sent to them. Remember to honor the 25% discount at launch.' : 'Waitlist email could not be sent.';
+        $userMessage = "Thank you! Our beta testing is complete, but you're on our list for future beta testing, and you'll get our 25% Founders Discount when the full mock exam launches. Check your inbox for details.";
+    } else {
+        $userMessage = "You're already signed up! Check your inbox (and spam folder) for our earlier email.";
+    }
+
     $subject = $repeat ? 'Repeat sign-up - Free beta mock exam'
-        : ($number <= 30 ? "Free beta tester #$number of 30 - add to spreadsheet" : "New waitlist sign-up #$number (after first 30) - add to spreadsheet");
+        : ($isBeta ? "Free beta tester #$number of " . BETA_SPOTS . " - add to spreadsheet" : "New waitlist sign-up #$number (after first " . BETA_SPOTS . ") - add to spreadsheet");
     $body  = $repeat ? "This email address has signed up before (no new spot used).\n\n"
-        : ($number <= 30 ? "New beta tester #$number of 30 for the free full-length RBT mock exam.\nThey get the full 85-question mock exam free in exchange for honest feedback.\n\n"
-                         : "New sign-up #$number. The 30 free spots are filled, so this person is on the regular waitlist.\n\n");
+        : ($isBeta ? "New beta tester #$number of " . BETA_SPOTS . " for the free full-length RBT mock exam.\nThey get the full 85-question mock exam free in exchange for honest feedback.\n\n"
+                   : "New sign-up #$number. The " . BETA_SPOTS . " free spots are filled, so this person is on the regular waitlist.\n\n");
     $body .= 'Name:        ' . ($name !== '' ? $name : '(not given)') . "\n";
     $body .= "Email:       $email\n";
     $body .= "Signed up:   " . gmdate('Y-m-d H:i') . " UTC\n";
-    $body .= "Signed up from: $source\n\n";
+    $body .= "Signed up from: $source\n";
+    $body .= "Their email: $visitorStatus\n\n";
     $body .= "Tip: click Reply to email this customer directly.\n";
 } else {
     $len = function_exists('mb_strlen') ? mb_strlen($message) : strlen($message);
@@ -194,11 +298,9 @@ $headers[] = 'MIME-Version: 1.0';
 $headers[] = 'Content-Type: text/plain; charset=UTF-8';
 $headers[] = 'Content-Transfer-Encoding: 8bit';
 
-$encodedSubject = '=?UTF-8?B?' . base64_encode('[' . SITE_NAME . '] ' . $subject) . '?=';
+$encodedSubject = encodeSubject('[' . SITE_NAME . '] ' . $subject);
 
 // 1) SMTP through the real mailbox
-$passFile = $privateDir . '/smtp-password.txt';
-$password = is_readable($passFile) ? trim((string) @file_get_contents($passFile)) : '';
 if ($password !== '' && smtpSend($password, TO_EMAIL, $encodedSubject, $body, $headers)) respond(true, '', 'smtp');
 
 // 2) PHP mail() fallback
