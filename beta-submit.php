@@ -53,7 +53,7 @@ const SURVEY = [
     'q1' => ['label' => 'When is your RBT exam scheduled?', 'options' => ['Within 2 weeks', '2–4 weeks', '1–3 months', 'Not scheduled yet', 'Already taken and did not pass. Retaking.']],
     'q2' => ['label' => 'What score do you expect on this mock exam?', 'options' => ['Below 60%', '60–69%', '70–79%', '80–89%', '90% or higher']],
     'q3' => ['label' => 'Which content area felt hardest? (up to 2)', 'options' => ['A', 'B', 'C', 'D', 'E', 'F'], 'multi' => 2],
-    'q4' => ['label' => 'Compared to the real exam, this mock exam felt', 'options' => ['Much easier', 'Somewhat easier', 'About the same', 'Somewhat harder', 'Much harder', 'Not sure']],
+    'q4' => ['label' => 'How does this mock exam compare to other RBT practice exams you have taken?', 'options' => ['Much easier', 'Somewhat easier', 'About the same', 'Somewhat harder', 'Much harder', "I haven't taken any other practice exams"]],
     'q5' => ['label' => 'Were any questions unclear or confusing?', 'options' => ['No', 'Yes']],
     'q6' => ['label' => 'How have you prepared so far?', 'options' => ['40-hour training only', 'Supervisor or BCBA review', 'Flashcards or apps', 'Other practice exams', 'Study group', 'On-the-job experience only'], 'multi' => 6],
     'q7' => ['label' => 'How did you hear about us?', 'options' => ['Google search', 'Instagram', 'TikTok', 'Facebook group', 'Reddit', 'YouTube', 'Supervisor or BCBA recommendation', 'Coworker or friend', 'Employer or ABA agency', 'Other']],
@@ -223,7 +223,7 @@ if ($out = @fopen($csv, 'a')) {
     flock($out, LOCK_EX);
     if ($isNew) {
         fputcsv($out, ['Date (UTC)', 'Email', 'First name', 'Exam', 'Score', 'Percent', 'Minutes used', 'A %', 'B %', 'C %', 'D %', 'E %', 'F %',
-            'Exam scheduled', 'Expected score', 'Hardest areas', 'Compared to real exam', 'Unclear questions?', 'Which / why',
+            'Exam scheduled', 'Expected score', 'Hardest areas', 'Compared to other practice exams','Unclear questions?', 'Which / why',
             'How prepared', 'Heard about us', 'Heard about us (other)', 'Answers']);
     }
     $safe = function ($v) { return preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v; };
@@ -246,7 +246,7 @@ $summary = "A beta tester finished {$exam['title']} and the survey. They saw the
     . "1. Exam scheduled: {$survey['q1']}\n"
     . "2. Expected score: {$survey['q2']}\n"
     . '3. Hardest areas: ' . implode(', ', $survey['q3']) . "\n"
-    . "4. Compared to real exam: {$survey['q4']}\n"
+    . "4. Compared to other practice exams: {$survey['q4']}\n"
     . "5. Unclear questions: {$survey['q5']}" . ($unclear !== '' ? "\n   $unclear" : '') . "\n"
     . '6. How prepared: ' . implode(', ', $survey['q6']) . "\n"
     . "7. Heard about us: {$survey['q7']}" . ($otherSource !== '' ? " ($otherSource)" : '') . "\n\n"
