@@ -195,15 +195,46 @@
     if (a === "prev") go(state.i - 1);
     else if (a === "next") go(state.i + 1);
     else if (a === "flag") { state.flags[state.i] = !state.flags[state.i]; saveDraft(); renderQuestion(); }
-    else if (a === "submit") {
-      var blank = state.answers.filter(function (x) { return x === null; }).length;
-      var flagged = state.flags.filter(Boolean).length;
-      var msg = "Submit your exam now?";
-      if (blank) msg += "\n\nYou have " + blank + " unanswered question" + (blank === 1 ? "" : "s") + ". Unanswered questions are scored as incorrect.";
-      if (flagged) msg += "\n\nYou have " + flagged + " flagged question" + (flagged === 1 ? "" : "s") + " to review.";
-      if (window.confirm(msg)) submitAnswers(false);
-    }
+    else if (a === "submit") confirmSubmit();
   });
+
+  // In-page confirmation (browser pop-ups like confirm() can be silently blocked)
+  function confirmSubmit() {
+    var blank = state.answers.filter(function (x) { return x === null; }).length;
+    var flagged = state.flags.filter(Boolean).length;
+    var lastFocus = document.activeElement;
+    var wrap = document.createElement("div");
+    wrap.className = "modal-backdrop";
+    wrap.innerHTML = '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">' +
+      '<h2 id="m-title">Submit your exam?</h2><p>' +
+      (blank ? "You have <strong>" + blank + " unanswered</strong> question" + (blank > 1 ? "s" : "") + ". Unanswered questions are scored as incorrect. " : "You answered every question. ") +
+      (flagged ? "You flagged <strong>" + flagged + "</strong> question" + (flagged > 1 ? "s" : "") + " for review. " : "") +
+      "After you submit, you can't change your answers.</p>" +
+      '<div class="btn-row"><button type="button" class="btn btn-primary" data-m="yes">Submit now</button><button type="button" class="btn btn-outline" data-m="no">Keep working</button></div></div>';
+    document.body.appendChild(wrap);
+    var yes = wrap.querySelector("[data-m='yes']"), no = wrap.querySelector("[data-m='no']");
+    no.focus();
+    function close() { wrap.remove(); document.removeEventListener("keydown", onKey, true); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function onKey(e) {
+      if (e.key === "Escape") { e.stopPropagation(); close(); }
+      if (e.key === "Tab") { e.preventDefault(); (document.activeElement === yes ? no : yes).focus(); }
+    }
+    document.addEventListener("keydown", onKey, true);
+    yes.addEventListener("click", function () { close(); submitAnswers(false); });
+    no.addEventListener("click", close);
+    wrap.addEventListener("click", function (e) { if (e.target === wrap) close(); });
+  }
+
+  function examError(msg) {
+    var box = examBox.querySelector(".beta-exam-error");
+    if (!box) {
+      box = document.createElement("div");
+      box.className = "form-status is-shown error beta-exam-error";
+      box.setAttribute("role", "alert");
+      examBox.insertBefore(box, examBox.querySelector(".q-nav"));
+    }
+    box.innerHTML = icon("i-x-circle") + "<div>" + msg + "</div>";
+  }
 
   document.addEventListener("keydown", function (e) {
     if (examBox.hidden || !state || e.target.closest("input, textarea")) return;
@@ -220,14 +251,14 @@
     send({ action: "answers", email: state.email, exam: exam, answers: sheet }).then(function (res) {
       if (!res.ok) {
         examBox.querySelectorAll("button").forEach(function (b) { b.disabled = false; });
-        window.alert(res.error || "Something went wrong submitting your exam. Please try again.");
+        examError(res.error || "Something went wrong submitting your exam. Please try again.");
         return;
       }
       if (timeUp) status(surveyForm, "success", "Time's up! Your answers were submitted automatically.");
       handle(res, state.email);
     }).catch(function () {
       examBox.querySelectorAll("button").forEach(function (b) { b.disabled = false; });
-      window.alert("We couldn't reach the server. Your answers are saved on this device. Please check your connection and click Submit exam again.");
+      examError("We couldn't reach the server. Your answers are saved on this device. Please check your connection and click Submit exam again.");
     });
   }
 
