@@ -218,7 +218,7 @@ foreach ($res['domains'] as $d) {
 
 // Survey spreadsheet (private)
 $csv = $privateDir . '/beta-survey-responses.csv';
-$isNew = !file_exists($csv);
+$isNew = !file_exists($csv) || filesize($csv) === 0 || trim((string) file_get_contents($csv)) === ''; // missing or emptied: add the header row
 if ($out = @fopen($csv, 'a')) {
     flock($out, LOCK_EX);
     if ($isNew) {

@@ -126,8 +126,8 @@ if ($formType === 'waitlist') {
     $source = preg_replace('/[^a-z0-9-]/', '', strtolower(field('source', 30)));
     if ($source === '') $source = 'full-exams-page';
     $csvFile = $privateDir . '/waitlist-signups.csv';
-    $isNew = !file_exists($csvFile);
-    $existing = $isNew ? '' : (string) @file_get_contents($csvFile);
+    $existing = file_exists($csvFile) ? (string) @file_get_contents($csvFile) : '';
+    $isNew = trim($existing) === ''; // missing or emptied file: start fresh with a header row
     $repeat = $existing !== '' && stripos($existing, ',' . $email . ',') !== false;
     // Sign-up number = earlier sign-ups (header and repeat rows not counted) + this one
     $rows = $existing === '' ? [] : array_slice(explode("\n", trim($existing)), 1);
