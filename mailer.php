@@ -95,14 +95,16 @@ function smtpSend($password, $to, $encodedSubject, $body, array $headers) {
     return $ok;
 }
 
-// Email a visitor from contact@ (plain text, optional PDF attachment). Returns true on success.
-function emailVisitor($password, $to, $subject, $text, $attachPath = '') {
+// Email a visitor from contact@ (plain text, optional PDF attachment or list of attachments).
+// Returns true on success.
+function emailVisitor($password, $to, $subject, $text, $attach = '') {
+    $files = array_values(array_filter((array) $attach, function ($f) { return $f !== '' && is_readable($f); }));
     $headers = [
         'From: ' . SITE_NAME . ' <' . FROM_EMAIL . '>',
         'Reply-To: ' . FROM_EMAIL,
         'MIME-Version: 1.0',
     ];
-    if ($attachPath === '') {
+    if (!$files) {
         $headers[] = 'Content-Type: text/plain; charset=UTF-8';
         $headers[] = 'Content-Transfer-Encoding: 8bit';
         $body = $text;
@@ -112,11 +114,13 @@ function emailVisitor($password, $to, $subject, $text, $attachPath = '') {
         $body  = "--$boundary\r\n";
         $body .= "Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n";
         $body .= chunk_split(base64_encode(str_replace("\n", "\r\n", str_replace("\r\n", "\n", $text))));
-        $body .= "--$boundary\r\n";
-        $body .= 'Content-Type: application/pdf; name="' . basename($attachPath) . "\"\r\n";
-        $body .= "Content-Transfer-Encoding: base64\r\n";
-        $body .= 'Content-Disposition: attachment; filename="' . basename($attachPath) . "\"\r\n\r\n";
-        $body .= chunk_split(base64_encode((string) file_get_contents($attachPath)));
+        foreach ($files as $file) {
+            $body .= "--$boundary\r\n";
+            $body .= 'Content-Type: application/pdf; name="' . basename($file) . "\"\r\n";
+            $body .= "Content-Transfer-Encoding: base64\r\n";
+            $body .= 'Content-Disposition: attachment; filename="' . basename($file) . "\"\r\n\r\n";
+            $body .= chunk_split(base64_encode((string) file_get_contents($file)));
+        }
         $body .= "--$boundary--";
     }
     return smtpSend($password, $to, encodeSubject($subject), $body, $headers);

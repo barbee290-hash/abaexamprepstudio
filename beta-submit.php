@@ -185,19 +185,31 @@ foreach ($byDomain as $d => $c) {
     $domainLines .= sprintf("  %s. %s: %d of %d (%d%%)\n", $d, array_key_exists($d, DOMAINS) ? DOMAINS[$d] : $d, $c[0], $c[1], round($c[0] / max(1, $c[1]) * 100));
 }
 
-// Email the tester their results + answer key PDF
+// Next exam in the series (sent automatically with these results, one after another)
+$nextId = $examId + 1;
+$nextKey = $privateDir . "/beta-exams/exam-$nextId-key.json";
+$nextPdf = $privateDir . "/beta-exams/RBT_Mock_Exam_$nextId.pdf";
+$hasNext = is_readable($nextKey) && is_readable($nextPdf);
+$nextLink = 'https://' . SITE_URL . "/beta.html?exam=$nextId&email=" . rawurlencode($email);
+
+// Email the tester their results + answer key PDF (+ the next exam, if there is one)
 $hi = $name !== '' ? "Hi $name," : 'Hi there,';
 $text = $hi . "\n\n"
     . "Thank you for completing the survey! Your feedback is a huge help. Here are your results for $examTitle:\n\n"
-    . "YOUR SCORE: $correct of $count correct ($pct%)\n\n"
+    . "YOUR SCORE: $correct of $count correct ($pct%)\n"
+    . ($count < $total ? "(The " . ($total - $count) . " unscored pilot questions don't count toward your score.)\n" : '') . "\n"
     . "By content area:\n$domainLines\n"
     . ($missed ? "Questions to review:\n  " . implode("\n  ", $missed) . "\n\n" : "You answered every scored question correctly. Outstanding work!\n\n")
     . "Your full Answer Key & Detailed Explanations are attached. Start with the questions above, and focus your study on your lowest content area.\n\n"
-    . "Thank you again for helping shape our mock exams. Good luck on your RBT exam!\n\n"
+    . ($hasNext
+        ? "READY FOR THE NEXT ONE?\nRBT Mock Exam $nextId is also attached (questions and answer sheet). When you finish it, submit your answers here:\n   $nextLink\n"
+          . "Same steps as before: answers, a short survey, then your score and answer key by email.\n\n"
+          . "Thank you again for helping shape our mock exams!\n\n"
+        : "That completes our beta mock exams. Thank you so much for helping shape them, and good luck on your RBT exam!\n\n")
     . signature();
 $pdf = !empty($key['answer_key_pdf']) ? $privateDir . '/beta-exams/' . basename($key['answer_key_pdf']) : '';
-$attach = ($pdf !== '' && is_readable($pdf)) ? $pdf : '';
-$sent = $password !== '' && emailVisitor($password, $email, "Your $examTitle results - " . SITE_NAME, $text, $attach);
+$attach = array_values(array_filter([$pdf, $hasNext ? $nextPdf : ''], function ($f) { return $f !== '' && is_readable($f); }));
+$sent = $password !== '' && emailVisitor($password, $email, "Your $examTitle results" . ($hasNext ? " + Mock Exam $nextId" : '') . ' - ' . SITE_NAME, $text, $attach);
 
 $rec['survey'] = $survey;
 $rec['q5_detail'] = $unclear;
@@ -232,7 +244,7 @@ if ($out = @fopen($csv, 'a')) {
 }
 
 // Owner summary
-$summary = "A beta tester finished the survey" . ($sent ? ' and was emailed their results and answer key.' : '. THEIR RESULTS EMAIL COULD NOT BE SENT. Please email them their score and the answer key.') . "\n\n"
+$summary = "A beta tester finished the survey" . ($sent ? ' and was emailed their results and answer key' . ($hasNext ? ", plus RBT Mock Exam $nextId." : '. This was the last exam in the series.') : '. THEIR RESULTS EMAIL COULD NOT BE SENT. Please email them their score and the answer key.') . "\n\n"
     . 'Name:  ' . ($name !== '' ? $name : '(not given)') . "\nEmail: $email\nExam:  $examTitle\n"
     . "Score: $correct of $count ($pct%)\n\nBy content area:\n$domainLines\n"
     . "PHASE 1 SURVEY\n"
@@ -250,4 +262,6 @@ if (!$sent) {
     reply(true, ['status' => 'done', 'message' => "Thank you! Your survey was received. We had trouble emailing your results automatically, so Jeanne will email your score and answer key to you personally within 1–2 days."]);
 }
 reply(true, ['status' => 'done', 'score' => "$correct of $count", 'percent' => $pct,
-    'message' => "Thank you! Your results and the full Answer Key & Detailed Explanations have been emailed to you. Check your inbox (and your spam folder, just in case)."]);
+    'message' => "Thank you! Your results and the full Answer Key & Detailed Explanations have been emailed to you"
+        . ($hasNext ? ", along with RBT Mock Exam $nextId so you can keep going" : '')
+        . ". Check your inbox (and your spam folder, just in case)."]);
