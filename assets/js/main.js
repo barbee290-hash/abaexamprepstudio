@@ -202,6 +202,7 @@
           done();
           if (data && data.ok) {
             showStatus(box, "success", data.message || form.getAttribute("data-success") || "Thank you! Your message was sent.");
+            if (data.redirect) setTimeout(function () { window.location.href = data.redirect; }, 1600);
             form.reset();
           } else {
             showStatus(box, "error", (data && data.error ? data.error + " " : "Something went wrong. ") + 'You can also email us at <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a>.');

@@ -1,18 +1,19 @@
 <?php
 /**
- * The Stimulus Control Room — beta mock exam: answers -> survey -> results.
- * Used by beta.html (JSON in, JSON out).
+ * The Stimulus Control Room — online beta mock exams: exam -> survey -> results.
+ * Used by beta.html (JSON in, JSON out). Only people on the beta list can use it.
  *
- *   action=answers  Saves the tester's 85 answers (only people on the beta list).
- *   action=survey   Saves the Phase 1 survey, scores the exam, and emails the tester
- *                   their score plus the Answer Key & Explanations PDF.
+ *   action=start    Checks the email, then returns the exam questions (no answers),
+ *                   or the survey / results if the tester already got that far.
+ *   action=answers  Saves the tester's answers.
+ *   action=survey   Saves the Phase 1 survey, scores the exam, and returns the results
+ *                   (score, by content area, and every question with its explanation).
  *
  * Private files, one folder ABOVE public_html (not in GitHub):
- *   waitlist-signups.csv              beta list (written by send.php)
- *   beta-exams/exam-N-key.json        answer key for exam N (answers, domains, scored, pdf)
- *   beta-exams/<answer key PDF>       named in the key file
- *   beta-data/responses.json          saved answers, survey, and scores (created automatically)
- *   beta-survey-responses.csv         one row per completed tester, for Excel / Google Sheets
+ *   waitlist-signups.csv          beta list (written by send.php)
+ *   beta-exams/exam-N.json        exam N: questions, answers, explanations, scored flags
+ *   beta-data/responses.json      saved answers, survey, and scores (created automatically)
+ *   beta-survey-responses.csv     one row per completed exam, for Excel / Google Sheets
  */
 
 require __DIR__ . '/mailer.php';
@@ -21,7 +22,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 function reply($ok, array $extra = []) {
     if (!$ok) http_response_code(400);
-    echo json_encode(array_merge(['ok' => $ok], $extra));
+    echo json_encode(array_merge(['ok' => $ok], $extra), JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -58,8 +59,38 @@ const SURVEY = [
     'q7' => ['label' => 'How did you hear about us?', 'options' => ['Google search', 'Instagram', 'TikTok', 'Facebook group', 'Reddit', 'YouTube', 'Supervisor or BCBA recommendation', 'Coworker or friend', 'Employer or ABA agency', 'Other']],
 ];
 
+function loadExam($id) {
+    global $privateDir;
+    $file = $privateDir . "/beta-exams/exam-$id.json";
+    $exam = is_readable($file) ? json_decode((string) file_get_contents($file), true) : null;
+    return ($exam && !empty($exam['questions'])) ? $exam : null;
+}
+
+// Score a saved answer string against an exam; returns everything the results screen needs
+function results(array $exam, array $rec) {
+    $answers = $rec['answers'];
+    $correct = 0; $count = 0; $byDomain = []; $review = [];
+    foreach ($exam['questions'] as $i => $q) {
+        $given = isset($answers[$i]) ? $answers[$i] : '-';
+        $ok = $given === $q['answer'];
+        if ($q['scored']) {
+            $count++;
+            $d = $q['domain'];
+            if (!isset($byDomain[$d])) $byDomain[$d] = ['d' => $d, 'name' => array_key_exists($d, DOMAINS) ? DOMAINS[$d] : $d, 'right' => 0, 'total' => 0];
+            $byDomain[$d]['total']++;
+            if ($ok) { $correct++; $byDomain[$d]['right']++; }
+        }
+        $review[] = ['n' => $q['n'], 'domain' => $q['domain'], 'task' => $q['task'], 'stem' => $q['stem'], 'options' => $q['options'],
+            'your' => $given, 'answer' => $q['answer'], 'rationale' => $q['rationale'], 'source' => $q['source'], 'scored' => $q['scored']];
+    }
+    ksort($byDomain);
+    $next = loadExam($exam['exam'] + 1) ? ['id' => $exam['exam'] + 1, 'title' => 'RBT Mock Exam ' . ($exam['exam'] + 1)] : null;
+    return ['title' => $exam['title'], 'correct' => $correct, 'count' => $count, 'total' => count($exam['questions']),
+        'percent' => (int) round($correct / max(1, $count) * 100), 'domains' => array_values($byDomain), 'review' => $review, 'next' => $next];
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') fail('Invalid request.');
-if (!withinRateLimit('scr_beta', 20, 600)) fail('Too many attempts. Please wait a few minutes and try again.');
+if (!withinRateLimit('scr_beta', 40, 600)) fail('Too many attempts. Please wait a few minutes and try again.');
 
 $action = post('action', 20);
 $email  = strtolower(oneLine(post('email', 200)));
@@ -67,22 +98,18 @@ $examId = (int) post('exam', 3);
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) fail('Please enter the email address you used to sign up.');
 if ($examId < 1 || $examId > 9) fail('Unknown exam.');
 
-// Answer key (private)
-$keyFile = $privateDir . "/beta-exams/exam-$examId-key.json";
-$key = is_readable($keyFile) ? json_decode((string) file_get_contents($keyFile), true) : null;
-if (!$key || empty($key['answers'])) fail('This exam is not open for submissions yet. Please email ' . FROM_EMAIL . '.');
-$total = strlen($key['answers']);
+$exam = loadExam($examId);
+if (!$exam) fail('This exam is not open yet. Please email ' . FROM_EMAIL . '.');
+$total = count($exam['questions']);
 
 // Must be on the beta list (first 30 sign-ups)
 $name = '';
 $onList = false;
-$csvFile = $privateDir . '/waitlist-signups.csv';
-if (($fh = @fopen($csvFile, 'r')) !== false) {
+if (($fh = @fopen($privateDir . '/waitlist-signups.csv', 'r')) !== false) {
     fgetcsv($fh); // header
     while (($row = fgetcsv($fh)) !== false) {
         if (count($row) < 7) continue;
-        $rowEmail = strtolower(ltrim(trim($row[3]), "'"));
-        if ($rowEmail === $email && stripos($row[6], 'Free beta') === 0) {
+        if (strtolower(ltrim(trim($row[3]), "'")) === $email && stripos($row[6], 'Free beta') === 0) {
             $onList = true;
             $name = ltrim(trim($row[4]), "'");
             break;
@@ -110,32 +137,46 @@ function save($store, array $all) {
     fflush($store);
 }
 
-$password = smtpPassword();
-$examTitle = isset($key['title']) ? $key['title'] : "RBT Mock Exam $examId";
+// Exams are taken in order: exam N opens after exam N-1 is finished
+if ($examId > 1) {
+    $prev = isset($all[$email . '|' . ($examId - 1)]) ? $all[$email . '|' . ($examId - 1)] : null;
+    if (!$prev || empty($prev['survey_submitted'])) fail('Please finish RBT Mock Exam ' . ($examId - 1) . ' first. Mock exams open one after another.');
+}
 
-if ($rec && !empty($rec['results_sent'])) {
-    reply(true, ['status' => 'done', 'message' => 'You have already completed this exam. Your results were emailed to you on ' . substr($rec['results_sent'], 0, 10) . '. Check your inbox and spam folder, or email ' . FROM_EMAIL . ' if you need them resent.']);
+if ($rec && !empty($rec['survey_submitted'])) {
+    reply(true, ['status' => 'results', 'name' => $name, 'results' => results($exam, $rec)]);
+}
+
+if ($action === 'start') {
+    if ($rec && !empty($rec['answers'])) reply(true, ['status' => 'survey', 'name' => $name]);
+    if (!$rec) {
+        $all[$id] = ['email' => $email, 'name' => $name, 'exam' => $examId, 'started' => gmdate('Y-m-d H:i') . ' UTC', 'started_ts' => time()];
+        save($store, $all);
+        $rec = $all[$id];
+    }
+    $questions = array_map(function ($q) {
+        return ['n' => $q['n'], 'domain' => $q['domain'], 'task' => $q['task'], 'stem' => $q['stem'], 'options' => $q['options']];
+    }, $exam['questions']);
+    $limit = (int) (isset($exam['time_limit_minutes']) ? $exam['time_limit_minutes'] : 90) * 60;
+    reply(true, ['status' => 'exam', 'name' => $name, 'title' => $exam['title'], 'questions' => $questions,
+        'time_limit' => $limit, 'elapsed' => max(0, time() - (int) $rec['started_ts'])]);
 }
 
 if ($action === 'answers') {
-    if ($rec && !empty($rec['answers'])) reply(true, ['status' => 'survey', 'message' => 'We already have your answers. Please complete the short survey below to get your results.']);
+    if ($rec && !empty($rec['answers'])) reply(true, ['status' => 'survey']);
     $answers = strtoupper(preg_replace('/[^A-Da-d-]/', '', post('answers', 200)));
-    if (strlen($answers) !== $total) fail('Something went wrong reading your answer sheet. Please try again.');
-    $all[$id] = [
-        'email' => $email, 'name' => $name, 'exam' => $examId,
-        'answers' => $answers, 'answers_submitted' => gmdate('Y-m-d H:i') . ' UTC',
-    ];
+    if (strlen($answers) !== $total) fail('Something went wrong reading your answers. Please try again.');
+    if (!$rec) $rec = ['email' => $email, 'name' => $name, 'exam' => $examId, 'started_ts' => time()];
+    $rec['answers'] = $answers;
+    $rec['answers_submitted'] = gmdate('Y-m-d H:i') . ' UTC';
+    $rec['minutes_used'] = (int) round((time() - (int) $rec['started_ts']) / 60);
+    $all[$id] = $rec;
     save($store, $all);
-    $blank = substr_count($answers, '-');
-    emailOwner($password, "Beta answers received - $examTitle",
-        "A beta tester submitted their answer sheet.\n\nName:  " . ($name !== '' ? $name : '(not given)') . "\nEmail: $email\nExam:  $examTitle\n"
-        . "Blank answers: $blank of $total\n\nThey now see the Phase 1 survey. Their score and answer key are emailed to them automatically when they finish it.\n",
-        $email);
     reply(true, ['status' => 'survey']);
 }
 
 if ($action !== 'survey') fail('Invalid request.');
-if (!$rec || empty($rec['answers'])) fail('Please submit your answer sheet first.');
+if (!$rec || empty($rec['answers'])) fail('Please finish the exam first.');
 
 // Validate the survey
 $survey = [];
@@ -156,72 +197,24 @@ $otherSource = post('q7_other', 200);
 if ($survey['q5'] === 'Yes' && $unclear === '') fail('Please tell us which question numbers were unclear and why.');
 if ($survey['q7'] === 'Other' && $otherSource === '') fail('Please tell us how you heard about us.');
 
-// Score
-$answers = $rec['answers'];
-$scored = isset($key['scored']) && is_array($key['scored']) ? array_map('intval', $key['scored']) : range(1, $total);
-$correct = 0;
-$byDomain = [];
-$missed = [];
-for ($n = 1; $n <= $total; $n++) {
-    if (!in_array($n, $scored, true)) continue;
-    $right = $key['answers'][$n - 1];
-    $given = $answers[$n - 1];
-    $dom = isset($key['domains'][(string) $n]) ? $key['domains'][(string) $n] : '?';
-    if (!isset($byDomain[$dom])) $byDomain[$dom] = [0, 0];
-    $byDomain[$dom][1]++;
-    if ($given === $right) {
-        $correct++;
-        $byDomain[$dom][0]++;
-    } else {
-        $missed[] = $n . ' (' . ($given === '-' ? 'blank' : "you chose $given") . ", correct: $right)";
-    }
-}
-$count = count($scored);
-$pct = (int) round($correct / max(1, $count) * 100);
-ksort($byDomain);
-
-$domainLines = '';
-foreach ($byDomain as $d => $c) {
-    $domainLines .= sprintf("  %s. %s: %d of %d (%d%%)\n", $d, array_key_exists($d, DOMAINS) ? DOMAINS[$d] : $d, $c[0], $c[1], round($c[0] / max(1, $c[1]) * 100));
-}
-
-// Next exam in the series (sent automatically with these results, one after another)
-$nextId = $examId + 1;
-$nextKey = $privateDir . "/beta-exams/exam-$nextId-key.json";
-$nextPdf = $privateDir . "/beta-exams/RBT_Mock_Exam_$nextId.pdf";
-$hasNext = is_readable($nextKey) && is_readable($nextPdf);
-$nextLink = 'https://' . SITE_URL . "/beta.html?exam=$nextId&email=" . rawurlencode($email);
-
-// Email the tester their results + answer key PDF (+ the next exam, if there is one)
-$hi = $name !== '' ? "Hi $name," : 'Hi there,';
-$text = $hi . "\n\n"
-    . "Thank you for completing the survey! Your feedback is a huge help. Here are your results for $examTitle:\n\n"
-    . "YOUR SCORE: $correct of $count correct ($pct%)\n"
-    . ($count < $total ? "(The " . ($total - $count) . " unscored pilot questions don't count toward your score.)\n" : '') . "\n"
-    . "By content area:\n$domainLines\n"
-    . ($missed ? "Questions to review:\n  " . implode("\n  ", $missed) . "\n\n" : "You answered every scored question correctly. Outstanding work!\n\n")
-    . "Your full Answer Key & Detailed Explanations are attached. Start with the questions above, and focus your study on your lowest content area.\n\n"
-    . ($hasNext
-        ? "READY FOR THE NEXT ONE?\nRBT Mock Exam $nextId is also attached (questions and answer sheet). When you finish it, submit your answers here:\n   $nextLink\n"
-          . "Same steps as before: answers, a short survey, then your score and answer key by email.\n\n"
-          . "Thank you again for helping shape our mock exams!\n\n"
-        : "That completes our beta mock exams. Thank you so much for helping shape them, and good luck on your RBT exam!\n\n")
-    . signature();
-$pdf = !empty($key['answer_key_pdf']) ? $privateDir . '/beta-exams/' . basename($key['answer_key_pdf']) : '';
-$attach = array_values(array_filter([$pdf, $hasNext ? $nextPdf : ''], function ($f) { return $f !== '' && is_readable($f); }));
-$sent = $password !== '' && emailVisitor($password, $email, "Your $examTitle results" . ($hasNext ? " + Mock Exam $nextId" : '') . ' - ' . SITE_NAME, $text, $attach);
-
 $rec['survey'] = $survey;
 $rec['q5_detail'] = $unclear;
 $rec['q7_other'] = $otherSource;
 $rec['survey_submitted'] = gmdate('Y-m-d H:i') . ' UTC';
-$rec['score'] = "$correct/$count";
-$rec['percent'] = $pct;
-if ($sent) $rec['results_sent'] = gmdate('Y-m-d H:i') . ' UTC';
+$res = results($exam, $rec);
+$rec['score'] = $res['correct'] . '/' . $res['count'];
+$rec['percent'] = $res['percent'];
 $all[$id] = $rec;
 save($store, $all);
 flock($store, LOCK_UN);
 fclose($store);
+
+$dp = [];
+$domainLines = '';
+foreach ($res['domains'] as $d) {
+    $dp[$d['d']] = (int) round($d['right'] / max(1, $d['total']) * 100);
+    $domainLines .= sprintf("  %s. %s: %d of %d (%d%%)\n", $d['d'], $d['name'], $d['right'], $d['total'], $dp[$d['d']]);
+}
 
 // Survey spreadsheet (private)
 $csv = $privateDir . '/beta-survey-responses.csv';
@@ -229,24 +222,26 @@ $isNew = !file_exists($csv);
 if ($out = @fopen($csv, 'a')) {
     flock($out, LOCK_EX);
     if ($isNew) {
-        fputcsv($out, ['Date (UTC)', 'Email', 'First name', 'Exam', 'Score', 'Percent', 'A %', 'B %', 'C %', 'D %', 'E %', 'F %',
+        fputcsv($out, ['Date (UTC)', 'Email', 'First name', 'Exam', 'Score', 'Percent', 'Minutes used', 'A %', 'B %', 'C %', 'D %', 'E %', 'F %',
             'Exam scheduled', 'Expected score', 'Hardest areas', 'Compared to real exam', 'Unclear questions?', 'Which / why',
             'How prepared', 'Heard about us', 'Heard about us (other)', 'Answers']);
     }
-    $dp = function ($d) use ($byDomain) { return isset($byDomain[$d]) ? round($byDomain[$d][0] / max(1, $byDomain[$d][1]) * 100) : ''; };
     $safe = function ($v) { return preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v; };
-    fputcsv($out, [gmdate('Y-m-d H:i'), $safe($email), $safe($name), $examTitle, "$correct/$count", $pct,
-        $dp('A'), $dp('B'), $dp('C'), $dp('D'), $dp('E'), $dp('F'),
+    $p = function ($d) use ($dp) { return isset($dp[$d]) ? $dp[$d] : ''; };
+    fputcsv($out, [gmdate('Y-m-d H:i'), $safe($email), $safe($name), $exam['title'], $rec['score'], $res['percent'],
+        isset($rec['minutes_used']) ? $rec['minutes_used'] : '',
+        $p('A'), $p('B'), $p('C'), $p('D'), $p('E'), $p('F'),
         $survey['q1'], $survey['q2'], implode('; ', $survey['q3']), $survey['q4'], $survey['q5'], $safe($unclear),
-        implode('; ', $survey['q6']), $survey['q7'], $safe($otherSource), $safe($answers)]);
+        implode('; ', $survey['q6']), $survey['q7'], $safe($otherSource), $safe($rec['answers'])]);
     flock($out, LOCK_UN);
     fclose($out);
 }
 
 // Owner summary
-$summary = "A beta tester finished the survey" . ($sent ? ' and was emailed their results and answer key' . ($hasNext ? ", plus RBT Mock Exam $nextId." : '. This was the last exam in the series.') : '. THEIR RESULTS EMAIL COULD NOT BE SENT. Please email them their score and the answer key.') . "\n\n"
-    . 'Name:  ' . ($name !== '' ? $name : '(not given)') . "\nEmail: $email\nExam:  $examTitle\n"
-    . "Score: $correct of $count ($pct%)\n\nBy content area:\n$domainLines\n"
+$summary = "A beta tester finished {$exam['title']} and the survey. They saw their score and the full answer review on screen.\n\n"
+    . 'Name:  ' . ($name !== '' ? $name : '(not given)') . "\nEmail: $email\n"
+    . "Score: {$res['correct']} of {$res['count']} scored questions ({$res['percent']}%)"
+    . (isset($rec['minutes_used']) ? "\nTime:  about {$rec['minutes_used']} minutes" : '') . "\n\nBy content area:\n$domainLines\n"
     . "PHASE 1 SURVEY\n"
     . "1. Exam scheduled: {$survey['q1']}\n"
     . "2. Expected score: {$survey['q2']}\n"
@@ -256,12 +251,6 @@ $summary = "A beta tester finished the survey" . ($sent ? ' and was emailed thei
     . '6. How prepared: ' . implode(', ', $survey['q6']) . "\n"
     . "7. Heard about us: {$survey['q7']}" . ($otherSource !== '' ? " ($otherSource)" : '') . "\n\n"
     . "All survey responses are also saved in beta-survey-responses.csv (File manager, the folder above public_html).\n";
-emailOwner($password, "Beta survey + results: $correct/$count ($pct%) - " . ($name !== '' ? $name : $email), $summary, $email);
+emailOwner(smtpPassword(), "Beta {$exam['title']}: {$res['correct']}/{$res['count']} ({$res['percent']}%) - " . ($name !== '' ? $name : $email), $summary, $email);
 
-if (!$sent) {
-    reply(true, ['status' => 'done', 'message' => "Thank you! Your survey was received. We had trouble emailing your results automatically, so Jeanne will email your score and answer key to you personally within 1–2 days."]);
-}
-reply(true, ['status' => 'done', 'score' => "$correct of $count", 'percent' => $pct,
-    'message' => "Thank you! Your results and the full Answer Key & Detailed Explanations have been emailed to you"
-        . ($hasNext ? ", along with RBT Mock Exam $nextId so you can keep going" : '')
-        . ". Check your inbox (and your spam folder, just in case)."]);
+reply(true, ['status' => 'results', 'name' => $name, 'results' => $res]);

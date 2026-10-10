@@ -24,20 +24,22 @@ const MAX_PER_WINDOW = 5;      // submissions allowed per IP...
 const WINDOW_SECONDS = 600;    // ...in this many seconds
 const MIN_FILL_SECONDS = 3;    // bots submit instantly
 const BETA_SPOTS = 30;
-const BETA_EXAM_FILE = 'RBT_Mock_Exam_1.pdf';
 const BETA_EXAM_ID = 1;
 
 $wantsJson = isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false;
 $formType  = (isset($_POST['form']) && $_POST['form'] === 'waitlist') ? 'waitlist' : 'feedback';
 $backPage  = $formType === 'waitlist' ? 'full-exams.html' : 'feedback.html';
 $userMessage = ''; // optional success message shown on the page instead of the form's default
+$redirect = '';    // optional page to send the visitor to next (beta testers -> online exam)
 
 function respond($ok, $error = '', $via = '') {
-    global $wantsJson, $backPage, $userMessage;
+    global $wantsJson, $backPage, $userMessage, $redirect;
     if ($wantsJson) {
         header('Content-Type: application/json; charset=utf-8');
         if (!$ok) http_response_code(400);
-        echo json_encode(['ok' => $ok, 'error' => $error, 'via' => $via, 'message' => $ok ? $userMessage : '']);
+        echo json_encode(['ok' => $ok, 'error' => $error, 'via' => $via, 'message' => $ok ? $userMessage : '', 'redirect' => $ok ? $redirect : '']);
+    } elseif ($ok && $redirect !== '') {
+        header('Location: ' . $redirect, true, 303);
     } else {
         header('Location: ' . $backPage . '?sent=' . ($ok ? '1' : '0'), true, 303);
     }
@@ -50,23 +52,23 @@ function field($key, $max) {
     return function_exists('mb_substr') ? mb_substr($v, 0, $max) : substr($v, 0, $max);
 }
 
-// Welcome letter for beta testers (from "Welcome Beta Full Mock Exam.docx")
+function betaExamLink($email) {
+    return 'https://' . SITE_URL . '/beta.html?exam=' . BETA_EXAM_ID . '&email=' . rawurlencode($email);
+}
+
+// Welcome letter for beta testers. The exam itself is taken online at beta.html.
 function betaWelcomeText($name, $email) {
     $hi = $name !== '' ? "Hi $name," : 'Hi there,';
-    $link = 'https://' . SITE_URL . '/beta.html?exam=' . BETA_EXAM_ID . '&email=' . rawurlencode($email);
     return $hi . "\n\n"
         . "Thank you so much for volunteering to be a beta tester for The Stimulus Control Room's full RBT mock exam! "
         . "Your feedback is invaluable in making sure this resource is as clear, realistic, and effective as possible.\n\n"
-        . "To help capture your genuine test-taking experience and initial instincts before seeing the results, "
-        . "we are splitting the feedback process into two brief stages:\n\n"
-        . "1. Attached is the RBT Mock Exam (Questions Only) along with an Answer Sheet. "
-        . "Please complete the exam, then submit your answers at this link:\n"
-        . "   $link\n\n"
-        . "2. As soon as you submit your answers, a short Phase 1 Survey will appear on the same page, asking about "
-        . "your overall impression of the questions, difficulty level, and exam flow.\n\n"
-        . "3. As soon as you submit that brief survey, your full Answer Key & Detailed Explanations will be emailed to you, "
-        . "along with your calculated score so you don't have to score it yourself!\n\n"
-        . "Thank you again for your time and insight. Good luck with the exam, and I look forward to your feedback!\n\n"
+        . "Here's how it works, all on our website:\n\n"
+        . "1. Take the full 85-question, 90-minute RBT Mock Exam online.\n"
+        . "2. Right after you submit, a short Phase 1 Survey asks about the questions, difficulty level, and exam flow.\n"
+        . "3. As soon as you submit the survey, you'll see your score and the full answer key with detailed explanations.\n\n"
+        . "If you haven't started yet, or need to come back later, use your personal link:\n"
+        . '   ' . betaExamLink($email) . "\n\n"
+        . "Thank you again for your time and insight. Good luck with the exam!\n\n"
         . signature();
 }
 
@@ -142,25 +144,24 @@ if ($formType === 'waitlist') {
         fclose($fh);
     }
 
-    // Email the visitor: beta testers get the welcome letter + exam PDF; later sign-ups get a waitlist note
-    $examPath = $privateDir . '/beta-exams/' . BETA_EXAM_FILE;
+    // Beta testers go straight to the online exam (plus a welcome email with their personal link);
+    // later sign-ups get a waitlist note
     $visitorStatus = 'Not emailed (repeat sign-up).';
     if ($isBeta) {
-        if (!is_readable($examPath)) {
-            $visitorStatus = 'NOT SENT: the exam PDF is missing from the beta-exams folder on the server. Please email it to them yourself.';
-        } elseif ($password !== '' && emailVisitor($password, $email, 'Your free RBT Mock Exam from ' . SITE_NAME, betaWelcomeText($name, $email), $examPath)) {
-            $visitorStatus = 'Welcome letter + ' . BETA_EXAM_FILE . ' sent to them automatically.';
-            $userMessage = "You're beta tester #$number! We just emailed you the mock exam. Check your inbox (and your spam folder, just in case).";
-        } else {
-            $visitorStatus = 'NOT SENT: the email could not be sent. Please email the exam to them yourself.';
-        }
-        if ($userMessage === '') $userMessage = "You're beta tester #$number! We'll email you the mock exam shortly.";
+        $sentWelcome = $password !== '' && emailVisitor($password, $email, 'Your free RBT Mock Exam from ' . SITE_NAME, betaWelcomeText($name, $email));
+        $visitorStatus = 'Sent straight to the online exam' . ($sentWelcome ? ', plus a welcome email with their personal exam link.' : '. (The welcome email with their link could not be sent.)');
+        $userMessage = "You're beta tester #$number! Taking you to Mock Exam 1 now…";
+        $redirect = betaExamLink($email);
     } elseif (!$repeat) {
         $sentFull = $password !== '' && emailVisitor($password, $email, "Beta testing is complete: your 25% Founders Discount - " . SITE_NAME, waitlistFullText($name));
         $visitorStatus = $sentFull ? '"Beta testing complete + 25% Founders Discount" email sent to them. Remember to honor the 25% discount at launch.' : 'Waitlist email could not be sent.';
         $userMessage = "Thank you! Our beta testing is complete, but you're on our list for future beta testing, and you'll get our 25% Founders Discount when the full mock exam launches. Check your inbox for details.";
     } else {
-        $userMessage = "You're already signed up! Check your inbox (and spam folder) for our earlier email.";
+        $userMessage = "You're already signed up!";
+        if (stripos($existing, ',' . $email . ',') !== false && preg_match('/^[^\n]*,' . preg_quote($email, '/') . ',[^\n]*Free beta/mi', $existing)) {
+            $userMessage = "You're already a beta tester! Taking you to your mock exam…";
+            $redirect = betaExamLink($email);
+        }
     }
 
     $subject = $repeat ? 'Repeat sign-up - Free beta mock exam'

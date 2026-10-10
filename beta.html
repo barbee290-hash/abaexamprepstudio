@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Submit Your Mock Exam Answers | The Stimulus Control Room</title>
-<meta name="description" content="Beta testers: submit your RBT mock exam answers, complete the short survey, and get your score and answer key by email.">
+<title>Beta RBT Mock Exam | The Stimulus Control Room</title>
+<meta name="description" content="Beta testers: take the full RBT mock exam online, complete a short survey, and see your score with every answer explained.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="canonical" href="https://thestimuluscontrolroom.com/beta.html">
 <meta name="theme-color" content="#176B6B">
@@ -44,10 +44,10 @@
   <section class="page-hero" style="padding-bottom:24px">
     <div class="container container-narrow">
       <span class="eyebrow">Beta tester</span>
-      <h1>Submit your mock exam answers</h1>
-      <p class="lead">Enter your answers below, then complete a short survey. Your score and the full Answer Key &amp; Detailed Explanations will be emailed to you right after.</p>
+      <h1 data-exam-title>RBT Mock Exam 1</h1>
+      <p class="lead">Take the full mock exam right here, answer a short survey, then see your score and every answer explained.</p>
       <ol class="beta-steps" aria-label="Steps">
-        <li class="is-active" data-step-label="1">Answers</li>
+        <li class="is-active" data-step-label="1">Exam</li>
         <li data-step-label="2">Survey</li>
         <li data-step-label="3">Results</li>
       </ol>
@@ -57,27 +57,33 @@
   <section class="section-tight" style="padding-top:0">
     <div class="container container-narrow">
 
-      <!-- Step 1: answer sheet -->
-      <form id="beta-answers" class="form-card" novalidate>
-        <input type="hidden" name="exam" value="1">
+      <!-- Start -->
+      <form id="beta-start" class="form-card" novalidate>
+        <h2 style="font-size:1.6rem">Ready when you are</h2>
+        <ul class="beta-facts">
+          <li><strong>85</strong> multiple-choice questions</li>
+          <li><strong>90</strong> minute timer</li>
+          <li>Results <strong>right after</strong> the survey</li>
+        </ul>
+        <p class="muted">Like the real RBT exam, 75 questions are scored and 10 are unscored pilot questions mixed in. Find a quiet spot and work without notes. The timer keeps running if you close the page, and your answers are saved as you go, so you can pick up where you left off.</p>
         <div class="field">
           <label for="b-email">Email address <span class="hint">(the one you signed up with)</span></label>
           <input type="email" id="b-email" name="email" autocomplete="email" required maxlength="200">
         </div>
-        <h2 class="beta-sheet-title"><span data-exam-title>RBT Mock Exam 1</span>: Answer Sheet</h2>
-        <p class="muted">Choose one answer for each question. Your choices are saved on this device as you go, so you can come back and finish later.</p>
-        <div id="answer-grid" class="answer-grid"></div>
         <div class="beta-submit-row">
-          <p class="beta-count" aria-live="polite"><strong data-answered>0</strong> of <span data-total>85</span> answered</p>
-          <button type="submit" class="btn btn-primary">Submit my answers <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></button>
+          <span></span>
+          <button type="submit" class="btn btn-primary">Start the exam <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></button>
         </div>
         <div class="form-status" role="status" aria-live="polite"></div>
       </form>
 
-      <!-- Step 2: survey -->
+      <!-- Exam (built by beta.js) -->
+      <div id="beta-exam" class="quiz-card" hidden></div>
+
+      <!-- Survey -->
       <form id="beta-survey" class="form-card" novalidate hidden>
         <h2 style="font-size:1.7rem">Phase 1 survey</h2>
-        <p class="muted">Your answers are saved. Answer these 7 quick questions to unlock your score and the full answer key.</p>
+        <p class="muted">Your answers are saved. Answer these 7 quick questions to see your score and the full answer review.</p>
 
         <fieldset class="field survey-q">
           <legend>1. When is your RBT exam scheduled?</legend>
@@ -157,21 +163,15 @@
 
         <div class="beta-submit-row">
           <span></span>
-          <button type="submit" class="btn btn-primary">Submit survey &amp; get my results <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></button>
+          <button type="submit" class="btn btn-primary">Submit survey &amp; see my results <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></button>
         </div>
         <div class="form-status" role="status" aria-live="polite"></div>
       </form>
 
-      <!-- Step 3: done -->
-      <div id="beta-done" class="form-card beta-done" hidden tabindex="-1">
-        <svg aria-hidden="true" class="beta-done-icon"><use href="assets/img/icons.svg#i-check-circle"></use></svg>
-        <h2 style="font-size:1.7rem">All done. Thank you!</h2>
-        <p class="beta-score" hidden>Your score: <strong data-score></strong></p>
-        <p data-done-message></p>
-        <div class="btn-row"><a class="btn btn-outline" href="practice.html">Keep practicing with free quizzes</a></div>
-      </div>
+      <!-- Results (built by beta.js) -->
+      <div id="beta-results" hidden tabindex="-1"></div>
 
-      <p class="form-note" style="margin-top:20px">Trouble submitting? Email your answer sheet to <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a> and we'll score it for you.</p>
+      <p class="form-note" style="margin-top:20px">Trouble with the exam? Email <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a> and we'll help.</p>
     </div>
   </section>
 </main>
