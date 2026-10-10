@@ -40,6 +40,8 @@ function postList($key) {
     return array_values(array_unique(array_map(function ($x) { return trim((string) $x); }, $v)));
 }
 
+const FAST_MINUTES = 25; // finishing faster than this is flagged as possible guessing
+
 const DOMAINS = [
     'A' => 'Data Collection and Graphing',
     'B' => 'Behavior Assessment',
@@ -80,8 +82,11 @@ function results(array $exam, array $rec) {
             $byDomain[$d]['total']++;
             if ($ok) { $correct++; $byDomain[$d]['right']++; }
         }
+        // Unanswered questions (only possible when time ran out) keep their answer and explanation hidden
+        $hide = $given === '-';
         $review[] = ['n' => $q['n'], 'domain' => $q['domain'], 'task' => $q['task'], 'stem' => $q['stem'], 'options' => $q['options'],
-            'your' => $given, 'answer' => $q['answer'], 'rationale' => $q['rationale'], 'source' => $q['source'], 'scored' => $q['scored']];
+            'your' => $given, 'answer' => $hide ? null : $q['answer'], 'rationale' => $hide ? null : $q['rationale'],
+            'source' => $hide ? null : $q['source'], 'scored' => $q['scored']];
     }
     ksort($byDomain);
     $next = loadExam($exam['exam'] + 1) ? ['id' => $exam['exam'] + 1, 'title' => 'RBT Mock Exam ' . ($exam['exam'] + 1)] : null;
@@ -167,6 +172,12 @@ if ($action === 'answers') {
     $answers = strtoupper(preg_replace('/[^A-Da-d-]/', '', post('answers', 200)));
     if (strlen($answers) !== $total) fail('Something went wrong reading your answers. Please try again.');
     if (!$rec) $rec = ['email' => $email, 'name' => $name, 'exam' => $examId, 'started_ts' => time()];
+    // Every question must be answered, unless the time limit has run out
+    $blank = substr_count($answers, '-');
+    $limit = (int) (isset($exam['time_limit_minutes']) ? $exam['time_limit_minutes'] : 90) * 60;
+    $timeUp = time() - (int) $rec['started_ts'] >= $limit - 15;
+    if ($blank && !$timeUp) fail("You still have $blank unanswered question" . ($blank === 1 ? '' : 's') . '. Please answer every question before submitting.');
+    $rec['time_up'] = $timeUp && $blank > 0;
     $rec['answers'] = $answers;
     $rec['answers_submitted'] = gmdate('Y-m-d H:i') . ' UTC';
     $rec['minutes_used'] = (int) round((time() - (int) $rec['started_ts']) / 60);
@@ -209,6 +220,9 @@ save($store, $all);
 flock($store, LOCK_UN);
 fclose($store);
 
+$minutes = isset($rec['minutes_used']) ? (int) $rec['minutes_used'] : null;
+$fast = $minutes !== null && $minutes < FAST_MINUTES;
+$flag = $fast ? "Possible guessing: finished in $minutes minutes (under " . FAST_MINUTES . ')' : '';
 $dp = [];
 $domainLines = '';
 foreach ($res['domains'] as $d) {
@@ -222,14 +236,14 @@ $isNew = !file_exists($csv) || filesize($csv) === 0 || trim((string) file_get_co
 if ($out = @fopen($csv, 'a')) {
     flock($out, LOCK_EX);
     if ($isNew) {
-        fputcsv($out, ['Date (UTC)', 'Email', 'First name', 'Exam', 'Score', 'Percent', 'Minutes used', 'A %', 'B %', 'C %', 'D %', 'E %', 'F %',
+        fputcsv($out, ['Date (UTC)', 'Email', 'First name', 'Exam', 'Score', 'Percent', 'Minutes used', 'Flag', 'A %', 'B %', 'C %', 'D %', 'E %', 'F %',
             'Exam scheduled', 'Expected score', 'Hardest areas', 'Compared to other practice exams','Unclear questions?', 'Which / why',
             'How prepared', 'Heard about us', 'Heard about us (other)', 'Answers']);
     }
     $safe = function ($v) { return preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v; };
     $p = function ($d) use ($dp) { return isset($dp[$d]) ? $dp[$d] : ''; };
     fputcsv($out, [gmdate('Y-m-d H:i'), $safe($email), $safe($name), $exam['title'], $rec['score'], $res['percent'],
-        isset($rec['minutes_used']) ? $rec['minutes_used'] : '',
+        $minutes !== null ? $minutes : '', $flag,
         $p('A'), $p('B'), $p('C'), $p('D'), $p('E'), $p('F'),
         $survey['q1'], $survey['q2'], implode('; ', $survey['q3']), $survey['q4'], $survey['q5'], $safe($unclear),
         implode('; ', $survey['q6']), $survey['q7'], $safe($otherSource), $safe($rec['answers'])]);
@@ -238,7 +252,9 @@ if ($out = @fopen($csv, 'a')) {
 }
 
 // Owner summary
-$summary = "A beta tester finished {$exam['title']} and the survey. They saw their score and the full answer review on screen.\n\n"
+$summary = ($fast ? "⚠ POSSIBLE GUESSING: they finished all {$total} questions in about $minutes minutes (under " . FAST_MINUTES . " minutes). You may want to disregard this feedback or follow up with them.\n\n" : '')
+    . (!empty($rec['time_up']) ? "Note: time ran out before they answered every question.\n\n" : '')
+    . "A beta tester finished {$exam['title']} and the survey. They saw their score and the full answer review on screen.\n\n"
     . 'Name:  ' . ($name !== '' ? $name : '(not given)') . "\nEmail: $email\n"
     . "Score: {$res['correct']} of {$res['count']} scored questions ({$res['percent']}%)"
     . (isset($rec['minutes_used']) ? "\nTime:  about {$rec['minutes_used']} minutes" : '') . "\n\nBy content area:\n$domainLines\n"
@@ -251,6 +267,6 @@ $summary = "A beta tester finished {$exam['title']} and the survey. They saw the
     . '6. How prepared: ' . implode(', ', $survey['q6']) . "\n"
     . "7. Heard about us: {$survey['q7']}" . ($otherSource !== '' ? " ($otherSource)" : '') . "\n\n"
     . "All survey responses are also saved in beta-survey-responses.csv (File manager, the folder above public_html).\n";
-emailOwner(smtpPassword(), "Beta {$exam['title']}: {$res['correct']}/{$res['count']} ({$res['percent']}%) - " . ($name !== '' ? $name : $email), $summary, $email);
+emailOwner(smtpPassword(), ($fast ? '⚠ FAST ' : '') . "Beta {$exam['title']}:{$res['correct']}/{$res['count']} ({$res['percent']}%) - " . ($name !== '' ? $name : $email), $summary, $email);
 
 reply(true, ['status' => 'results', 'name' => $name, 'results' => $res]);

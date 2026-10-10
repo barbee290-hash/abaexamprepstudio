@@ -199,28 +199,36 @@
   });
 
   // In-page confirmation (browser pop-ups like confirm() can be silently blocked)
+  // Every question must be answered before submitting early; only the timer can submit blanks.
   function confirmSubmit() {
     var blank = state.answers.filter(function (x) { return x === null; }).length;
     var flagged = state.flags.filter(Boolean).length;
+    var firstBlank = state.answers.indexOf(null);
     var lastFocus = document.activeElement;
     var wrap = document.createElement("div");
     wrap.className = "modal-backdrop";
-    wrap.innerHTML = '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">' +
-      '<h2 id="m-title">Submit your exam?</h2><p>' +
-      (blank ? "You have <strong>" + blank + " unanswered</strong> question" + (blank > 1 ? "s" : "") + ". Unanswered questions are scored as incorrect. " : "You answered every question. ") +
-      (flagged ? "You flagged <strong>" + flagged + "</strong> question" + (flagged > 1 ? "s" : "") + " for review. " : "") +
-      "After you submit, you can't change your answers.</p>" +
-      '<div class="btn-row"><button type="button" class="btn btn-primary" data-m="yes">Submit now</button><button type="button" class="btn btn-outline" data-m="no">Keep working</button></div></div>';
+    var body = blank
+      ? '<h2 id="m-title">Please answer every question</h2><p>You still have <strong>' + blank + " unanswered</strong> question" + (blank > 1 ? "s" : "") +
+        ". Every question needs an answer before you can submit. If you're not sure, choose your best guess, just like on the real exam.</p>" +
+        '<div class="btn-row"><button type="button" class="btn btn-primary" data-m="go">Go to question ' + (firstBlank + 1) + '</button><button type="button" class="btn btn-outline" data-m="no">Keep working</button></div>'
+      : '<h2 id="m-title">Submit your exam?</h2><p>You answered every question. ' +
+        (flagged ? "You flagged <strong>" + flagged + "</strong> question" + (flagged > 1 ? "s" : "") + " for review. " : "") +
+        "After you submit, you can't change your answers.</p>" +
+        '<div class="btn-row"><button type="button" class="btn btn-primary" data-m="yes">Submit now</button><button type="button" class="btn btn-outline" data-m="no">Keep working</button></div>';
+    wrap.innerHTML = '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">' + body + "</div>";
     document.body.appendChild(wrap);
-    var yes = wrap.querySelector("[data-m='yes']"), no = wrap.querySelector("[data-m='no']");
+    var primary = wrap.querySelector("[data-m='yes'], [data-m='go']"), no = wrap.querySelector("[data-m='no']");
     no.focus();
     function close() { wrap.remove(); document.removeEventListener("keydown", onKey, true); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function onKey(e) {
       if (e.key === "Escape") { e.stopPropagation(); close(); }
-      if (e.key === "Tab") { e.preventDefault(); (document.activeElement === yes ? no : yes).focus(); }
+      if (e.key === "Tab") { e.preventDefault(); (document.activeElement === primary ? no : primary).focus(); }
     }
     document.addEventListener("keydown", onKey, true);
-    yes.addEventListener("click", function () { close(); submitAnswers(false); });
+    primary.addEventListener("click", function () {
+      close();
+      if (blank) go(firstBlank); else submitAnswers(false);
+    });
     no.addEventListener("click", close);
     wrap.addEventListener("click", function (e) { if (e.target === wrap) close(); });
   }
@@ -303,7 +311,7 @@
   function renderResults(r) {
     var level = r.percent >= 80 ? "good" : r.percent >= 65 ? "mid" : "low";
     var levelText = { good: "On track", mid: "Getting close", low: "Keep practicing" }[level];
-    var wrong = r.review.filter(function (q) { return q.scored && q.your !== q.answer; }).length;
+    var wrong = r.review.filter(function (q) { return q.scored && (q.your === "-" || q.your !== q.answer); }).length;
     var html = '<div class="quiz-card">' +
       '<span class="readiness ' + level + '">' + icon(level === "good" ? "i-check-circle" : "i-target") + levelText + "</span>" +
       '<h2 style="font-size:clamp(1.8rem,3.4vw,2.4rem);margin-bottom:6px">Your results: ' + esc(r.title) + "</h2>" +
@@ -328,11 +336,17 @@
         '<button type="button" data-f="wrong" aria-pressed="false">Missed (' + wrong + ")</button>" +
       '</div><ol class="review-list">';
     r.review.forEach(function (q) {
-      var ok = q.your === q.answer;
+      var blank = q.your === "-";
+      var ok = !blank && q.your === q.answer;
       html += '<li class="review-item ' + (ok ? "is-right" : "is-wrong") + '" data-ok="' + (ok || !q.scored) + '">' +
-        '<div class="meta"><span>Q' + q.n + "</span><span>Section " + q.domain + " · Task " + esc(q.task) + "</span><span>" + (ok ? "Correct" : q.your === "-" ? "Not answered" : "Incorrect") + (q.scored ? "" : " · Pilot, unscored") + "</span></div>" +
-        "<h3>" + esc(q.stem) + "</h3>" +
-        (ok ? "" : '<p class="ans you-wrong">' + icon("i-x") + " Your answer: " + (q.your === "-" ? "none" : q.your + ". " + esc(q.options[q.your])) + "</p>") +
+        '<div class="meta"><span>Q' + q.n + "</span><span>Section " + q.domain + " · Task " + esc(q.task) + "</span><span>" + (ok ? "Correct" : blank ? "Not answered" : "Incorrect") + (q.scored ? "" : " · Pilot, unscored") + "</span></div>" +
+        "<h3>" + esc(q.stem) + "</h3>";
+      if (blank) {
+        html += '<p class="ans you-wrong">' + icon("i-x") + " Not answered (time ran out)</p>" +
+          '<p class="why">The answer and explanation are only shown for questions you answered.</p></li>';
+        return;
+      }
+      html += (ok ? "" : '<p class="ans you-wrong">' + icon("i-x") + " Your answer: " + q.your + ". " + esc(q.options[q.your]) + "</p>") +
         '<p class="ans right">Correct answer: ' + q.answer + ". " + esc(q.options[q.answer]) + "</p>" +
         '<p class="why">' + esc(q.rationale) + "</p>" +
         '<p class="why" style="font-size:.82rem">Source: ' + esc(q.source) + "</p></li>";
