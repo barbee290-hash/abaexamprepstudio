@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Submit Your Mock Exam Answers | The Stimulus Control Room</title>
+<meta name="description" content="Beta testers: submit your RBT mock exam answers, complete the short survey, and get your score and answer key by email.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://thestimuluscontrolroom.com/beta.html">
+<meta name="theme-color" content="#176B6B">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head><body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html" aria-label="The Stimulus Control Room, home">
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#E9785D"/><circle cx="32" cy="32" r="21.5" fill="none" stroke="#FAF8F3" stroke-opacity=".55" stroke-width="5" stroke-dasharray="4.8 4.2"/><path d="M32 11.7 46.9 17.1V29.9C46.9 40 40.5 46.9 32 50.7 23.5 46.9 17.1 40 17.1 29.9V17.1Z" fill="#2D6A66" stroke="#FAF8F3" stroke-width="1.6"/><path d="M32 16.5 42.7 20.5V30.1C42.7 37.3 38.4 42.7 32 45.6 25.6 42.7 21.3 37.3 21.3 30.1V20.5Z" fill="#FAF8F3"/><path d="m25.6 30.9 4.8 4.8 9.1-10.1" fill="none" stroke="#E9785D" stroke-width="4.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="brand-name">The Stimulus Control Room<small>RBT® Exam Prep</small></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu"><span></span><span></span><span></span></button>
+    <nav id="primary-nav" class="primary-nav" aria-label="Main">
+      <ul class="nav-list">
+        <li class="nav-home"><a href="index.html">Home</a></li>
+        <li><a href="rbt-practice-test/">Practice Test</a></li>
+        <li><a href="practice.html">Quizzes</a></li>
+        <li><a href="safmeds.html">SAFMEDS</a></li>
+        <li><a href="exam-guide.html">Study Guide</a></li>
+        <li><a href="full-exams.html">Full Exams</a></li>
+        <li class="nav-home"><a href="about.html">About</a></li>
+        <li><a href="feedback.html">Feedback</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <a class="btn btn-primary btn-sm nav-cta" href="quiz.html?set=mock">Free Mock Exam <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></a>
+    </nav>
+  </div>
+</header>
+<main id="main">
+  <section class="page-hero" style="padding-bottom:24px">
+    <div class="container container-narrow">
+      <span class="eyebrow">Beta tester</span>
+      <h1>Submit your mock exam answers</h1>
+      <p class="lead">Enter your answers below, then complete a short survey. Your score and the full Answer Key &amp; Detailed Explanations will be emailed to you right after.</p>
+      <ol class="beta-steps" aria-label="Steps">
+        <li class="is-active" data-step-label="1">Answers</li>
+        <li data-step-label="2">Survey</li>
+        <li data-step-label="3">Results</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section-tight" style="padding-top:0">
+    <div class="container container-narrow">
+
+      <!-- Step 1: answer sheet -->
+      <form id="beta-answers" class="form-card" novalidate>
+        <input type="hidden" name="exam" value="1">
+        <div class="field">
+          <label for="b-email">Email address <span class="hint">(the one you signed up with)</span></label>
+          <input type="email" id="b-email" name="email" autocomplete="email" required maxlength="200">
+        </div>
+        <h2 class="beta-sheet-title"><span data-exam-title>RBT Mock Exam 1</span>: Answer Sheet</h2>
+        <p class="muted">Choose one answer for each question. Your choices are saved on this device as you go, so you can come back and finish later.</p>
+        <div id="answer-grid" class="answer-grid"></div>
+        <div class="beta-submit-row">
+          <p class="beta-count" aria-live="polite"><strong data-answered>0</strong> of <span data-total>85</span> answered</p>
+          <button type="submit" class="btn btn-primary">Submit my answers <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></button>
+        </div>
+        <div class="form-status" role="status" aria-live="polite"></div>
+      </form>
+
+      <!-- Step 2: survey -->
+      <form id="beta-survey" class="form-card" novalidate hidden>
+        <h2 style="font-size:1.7rem">Phase 1 survey</h2>
+        <p class="muted">Your answers are saved. Answer these 7 quick questions to unlock your score and the full answer key.</p>
+
+        <fieldset class="field survey-q">
+          <legend>1. When is your RBT exam scheduled?</legend>
+          <label><input type="radio" name="q1" value="Within 2 weeks"> Within 2 weeks</label>
+          <label><input type="radio" name="q1" value="2–4 weeks"> 2–4 weeks</label>
+          <label><input type="radio" name="q1" value="1–3 months"> 1–3 months</label>
+          <label><input type="radio" name="q1" value="Not scheduled yet"> Not scheduled yet</label>
+          <label><input type="radio" name="q1" value="Already taken and did not pass. Retaking."> Already taken and did not pass. Retaking.</label>
+        </fieldset>
+
+        <fieldset class="field survey-q">
+          <legend>2. What score do you expect on this mock exam?</legend>
+          <label><input type="radio" name="q2" value="Below 60%"> Below 60%</label>
+          <label><input type="radio" name="q2" value="60–69%"> 60–69%</label>
+          <label><input type="radio" name="q2" value="70–79%"> 70–79%</label>
+          <label><input type="radio" name="q2" value="80–89%"> 80–89%</label>
+          <label><input type="radio" name="q2" value="90% or higher"> 90% or higher</label>
+        </fieldset>
+
+        <fieldset class="field survey-q" data-max="2">
+          <legend>3. Which content area felt hardest? <span class="hint">(select up to 2)</span></legend>
+          <label><input type="checkbox" name="q3[]" value="A"> A. Data Collection and Graphing</label>
+          <label><input type="checkbox" name="q3[]" value="B"> B. Behavior Assessment</label>
+          <label><input type="checkbox" name="q3[]" value="C"> C. Behavior Acquisition</label>
+          <label><input type="checkbox" name="q3[]" value="D"> D. Behavior Reduction</label>
+          <label><input type="checkbox" name="q3[]" value="E"> E. Documentation and Reporting</label>
+          <label><input type="checkbox" name="q3[]" value="F"> F. Ethics</label>
+        </fieldset>
+
+        <fieldset class="field survey-q">
+          <legend>4. Compared to what you expect on the real exam, this mock exam felt:</legend>
+          <label><input type="radio" name="q4" value="Much easier"> Much easier</label>
+          <label><input type="radio" name="q4" value="Somewhat easier"> Somewhat easier</label>
+          <label><input type="radio" name="q4" value="About the same"> About the same</label>
+          <label><input type="radio" name="q4" value="Somewhat harder"> Somewhat harder</label>
+          <label><input type="radio" name="q4" value="Much harder"> Much harder</label>
+          <label><input type="radio" name="q4" value="Not sure"> Not sure</label>
+        </fieldset>
+
+        <fieldset class="field survey-q">
+          <legend>5. Were any questions unclear or confusing?</legend>
+          <label><input type="radio" name="q5" value="No"> No</label>
+          <label><input type="radio" name="q5" value="Yes"> Yes</label>
+          <div class="survey-detail" data-show-when="q5=Yes" hidden>
+            <label for="q5-detail">Enter the question number(s) and what was unclear</label>
+            <textarea id="q5-detail" name="q5_detail" rows="3" maxlength="2000"></textarea>
+          </div>
+        </fieldset>
+
+        <fieldset class="field survey-q">
+          <legend>6. How have you prepared so far? <span class="hint">(select all that apply)</span></legend>
+          <label><input type="checkbox" name="q6[]" value="40-hour training only"> 40-hour training only</label>
+          <label><input type="checkbox" name="q6[]" value="Supervisor or BCBA review"> Supervisor or BCBA review</label>
+          <label><input type="checkbox" name="q6[]" value="Flashcards or apps"> Flashcards or apps</label>
+          <label><input type="checkbox" name="q6[]" value="Other practice exams"> Other practice exams</label>
+          <label><input type="checkbox" name="q6[]" value="Study group"> Study group</label>
+          <label><input type="checkbox" name="q6[]" value="On-the-job experience only"> On-the-job experience only</label>
+        </fieldset>
+
+        <fieldset class="field survey-q">
+          <legend>7. How did you hear about us?</legend>
+          <label><input type="radio" name="q7" value="Google search"> Google search</label>
+          <label><input type="radio" name="q7" value="Instagram"> Instagram</label>
+          <label><input type="radio" name="q7" value="TikTok"> TikTok</label>
+          <label><input type="radio" name="q7" value="Facebook group"> Facebook group</label>
+          <label><input type="radio" name="q7" value="Reddit"> Reddit</label>
+          <label><input type="radio" name="q7" value="YouTube"> YouTube</label>
+          <label><input type="radio" name="q7" value="Supervisor or BCBA recommendation"> Supervisor or BCBA recommendation</label>
+          <label><input type="radio" name="q7" value="Coworker or friend"> Coworker or friend</label>
+          <label><input type="radio" name="q7" value="Employer or ABA agency"> Employer or ABA agency</label>
+          <label><input type="radio" name="q7" value="Other"> Other</label>
+          <div class="survey-detail" data-show-when="q7=Other" hidden>
+            <label for="q7-other">Please tell us where</label>
+            <input type="text" id="q7-other" name="q7_other" maxlength="200">
+          </div>
+        </fieldset>
+
+        <div class="beta-submit-row">
+          <span></span>
+          <button type="submit" class="btn btn-primary">Submit survey &amp; get my results <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></button>
+        </div>
+        <div class="form-status" role="status" aria-live="polite"></div>
+      </form>
+
+      <!-- Step 3: done -->
+      <div id="beta-done" class="form-card beta-done" hidden tabindex="-1">
+        <svg aria-hidden="true" class="beta-done-icon"><use href="assets/img/icons.svg#i-check-circle"></use></svg>
+        <h2 style="font-size:1.7rem">All done. Thank you!</h2>
+        <p class="beta-score" hidden>Your score: <strong data-score></strong></p>
+        <p data-done-message></p>
+        <div class="btn-row"><a class="btn btn-outline" href="practice.html">Keep practicing with free quizzes</a></div>
+      </div>
+
+      <p class="form-note" style="margin-top:20px">Trouble submitting? Email your answer sheet to <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a> and we'll score it for you.</p>
+    </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <svg class="footer-watermark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#E9785D"/><circle cx="32" cy="32" r="21.5" fill="none" stroke="#FAF8F3" stroke-opacity=".55" stroke-width="5" stroke-dasharray="4.8 4.2"/><path d="M32 11.7 46.9 17.1V29.9C46.9 40 40.5 46.9 32 50.7 23.5 46.9 17.1 40 17.1 29.9V17.1Z" fill="#2D6A66" stroke="#FAF8F3" stroke-width="1.6"/><path d="M32 16.5 42.7 20.5V30.1C42.7 37.3 38.4 42.7 32 45.6 25.6 42.7 21.3 37.3 21.3 30.1V20.5Z" fill="#FAF8F3"/><path d="m25.6 30.9 4.8 4.8 9.1-10.1" fill="none" stroke="#E9785D" stroke-width="4.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html" aria-label="The Stimulus Control Room, home">
+          <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#E9785D"/><circle cx="32" cy="32" r="21.5" fill="none" stroke="#FAF8F3" stroke-opacity=".55" stroke-width="5" stroke-dasharray="4.8 4.2"/><path d="M32 11.7 46.9 17.1V29.9C46.9 40 40.5 46.9 32 50.7 23.5 46.9 17.1 40 17.1 29.9V17.1Z" fill="#2D6A66" stroke="#FAF8F3" stroke-width="1.6"/><path d="M32 16.5 42.7 20.5V30.1C42.7 37.3 38.4 42.7 32 45.6 25.6 42.7 21.3 37.3 21.3 30.1V20.5Z" fill="#FAF8F3"/><path d="m25.6 30.9 4.8 4.8 9.1-10.1" fill="none" stroke="#E9785D" stroke-width="4.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="brand-name">The Stimulus Control Room<small>RBT® Exam Prep</small></span>
+        </a>
+        <p>Free RBT® mock exams and practice tests for future Registered Behavior Technicians, built around every section of the 2026 exam.</p>
+        <a class="footer-email" href="mailto:contact@thestimuluscontrolroom.com"><svg aria-hidden="true"><use href="assets/img/icons.svg#i-mail"></use></svg>contact@thestimuluscontrolroom.com</a>
+      </div>
+      <div class="footer-col">
+        <h2>Practice</h2>
+        <ul>
+          <li><a href="rbt-practice-test/">Free RBT Practice Test</a></li>
+          <li><a href="quiz.html?set=mock">Free 20-Question Mock Exam</a></li>
+          <li><a href="safmeds.html">SAFMEDS Timings</a></li>
+          <li><a href="safmeds-print.html">Printable SAFMEDS Cards</a></li>
+          <li><a href="quiz.html?set=A">Section A: Data Collection & Graphing</a></li>
+          <li><a href="quiz.html?set=B">Section B: Behavior Assessment</a></li>
+          <li><a href="quiz.html?set=C">Section C: Behavior Acquisition</a></li>
+          <li><a href="quiz.html?set=D">Section D: Behavior Reduction</a></li>
+          <li><a href="quiz.html?set=E">Section E: Documentation & Reporting</a></li>
+          <li><a href="quiz.html?set=F">Section F: Ethics</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h2>Resources</h2>
+        <ul>
+          <li><a href="practice.html">All Practice Quizzes</a></li>
+          <li><a href="exam-guide.html">RBT Exam Guide</a></li>
+          <li><a href="full-exams.html">Full-Length Exams</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h2>Help</h2>
+        <ul>
+          <li><a href="feedback.html">Leave Feedback</a></li>
+          <li><a href="contact.html">Contact &amp; FAQ</a></li>
+          <li><a href="mailto:contact@thestimuluscontrolroom.com">Email Us</a></li>
+          <li><a href="https://www.bacb.com/rbt/" target="_blank" rel="noopener">Official BACB® RBT Page <span class="sr-only">(opens in a new tab)</span></a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="disclaimer"><strong>Disclaimer:</strong> The Stimulus Control Room is an independent exam preparation resource and is not affiliated with, endorsed by, or sponsored by the Behavior Analyst Certification Board® (BACB®). Registered Behavior Technician® and RBT® are registered trademarks of the Behavior Analyst Certification Board, Inc. All practice materials, quizzes, and content on this site are created independently to help candidates prepare for the official RBT® certification exam.</p>
+    <div class="footer-bottom">
+      <span>© <span data-year>2026</span> The Stimulus Control Room. All rights reserved.</span>
+      <span>Made with care for future RBTs.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/beta.js" defer></script>
+<script src="assets/js/main.js" defer></script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "1fd412b101cb4beaa5135e861800b736"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

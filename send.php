@@ -8,29 +8,25 @@
  * or redirects back to the form page when JavaScript is off.
  *
  * Beta mock exam: the first BETA_SPOTS waitlist sign-ups are emailed the
- * welcome letter with the mock exam PDF attached. Later sign-ups get a
- * "spots are filled, you're on the waitlist" email instead.
+ * welcome letter with the mock exam PDF attached and a link to beta.html,
+ * where they submit answers, take the survey, and get their results.
+ * Later sign-ups get a "beta testing complete + 25% Founders Discount" email.
  *
  * Private files live one folder ABOVE public_html (not reachable from the web),
  * and are NOT in GitHub:
- *   smtp-password.txt          the contact@ mailbox password
+ *   smtp-password.txt           the contact@ mailbox password
  *   beta-exams/<BETA_EXAM_FILE> the mock exam PDF sent to beta testers
  */
 
-const TO_EMAIL   = 'contact@thestimuluscontrolroom.com';
-// Must be a real mailbox on this domain, or Hostinger may reject or spam-filter the message
-const FROM_EMAIL = 'contact@thestimuluscontrolroom.com';
-const SITE_NAME  = 'The Stimulus Control Room';
-const SITE_URL   = 'thestimuluscontrolroom.com';
-const SMTP_HOST  = 'smtp.hostinger.com';
-const SMTP_PORT  = 465;        // implicit SSL
+require __DIR__ . '/mailer.php';
+
 const MAX_PER_WINDOW = 5;      // submissions allowed per IP...
 const WINDOW_SECONDS = 600;    // ...in this many seconds
 const MIN_FILL_SECONDS = 3;    // bots submit instantly
 const BETA_SPOTS = 30;
 const BETA_EXAM_FILE = 'RBT_Mock_Exam_1.pdf';
+const BETA_EXAM_ID = 1;
 
-$privateDir = dirname(__DIR__); // folder above public_html
 $wantsJson = isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false;
 $formType  = (isset($_POST['form']) && $_POST['form'] === 'waitlist') ? 'waitlist' : 'feedback';
 $backPage  = $formType === 'waitlist' ? 'full-exams.html' : 'feedback.html';
@@ -54,108 +50,23 @@ function field($key, $max) {
     return function_exists('mb_substr') ? mb_substr($v, 0, $max) : substr($v, 0, $max);
 }
 
-// Header-safe single-line text (prevents email header injection)
-function oneLine($v) {
-    return trim(preg_replace('/[\r\n\t]+/', ' ', $v));
-}
-
-function encodeSubject($s) {
-    return '=?UTF-8?B?' . base64_encode($s) . '?=';
-}
-
-// Read one full SMTP reply (handles multi-line "250-..." replies); returns the status code
-function smtpRead($fp) {
-    $code = 0;
-    while (($line = fgets($fp, 515)) !== false) {
-        $code = (int) substr($line, 0, 3);
-        if (strlen($line) < 4 || $line[3] !== '-') break;
-    }
-    return $code;
-}
-
-function smtpCmd($fp, $cmd, $expect) {
-    fwrite($fp, $cmd . "\r\n");
-    return smtpRead($fp) === $expect;
-}
-
-// Minimal authenticated SMTP send over SSL. Returns true on success.
-function smtpSend($password, $to, $encodedSubject, $body, array $headers) {
-    $fp = @stream_socket_client('ssl://' . SMTP_HOST . ':' . SMTP_PORT, $errno, $errstr, 15);
-    if (!$fp) return false;
-    stream_set_timeout($fp, 15);
-    $host = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost';
-    $ok = smtpRead($fp) === 220
-        && smtpCmd($fp, 'EHLO ' . $host, 250)
-        && smtpCmd($fp, 'AUTH LOGIN', 334)
-        && smtpCmd($fp, base64_encode(FROM_EMAIL), 334)
-        && smtpCmd($fp, base64_encode($password), 235)
-        && smtpCmd($fp, 'MAIL FROM:<' . FROM_EMAIL . '>', 250)
-        && smtpCmd($fp, 'RCPT TO:<' . $to . '>', 250)
-        && smtpCmd($fp, 'DATA', 354);
-    if ($ok) {
-        $all = array_merge([
-            'Date: ' . date('r'),
-            'To: <' . $to . '>',
-            'Subject: ' . $encodedSubject,
-            'Message-ID: <' . bin2hex(random_bytes(12)) . '@' . SITE_URL . '>',
-        ], $headers);
-        $text = preg_replace('/\r\n|\r|\n/', "\r\n", $body);
-        $text = preg_replace('/^\./m', '..', $text); // dot-stuffing
-        fwrite($fp, implode("\r\n", $all) . "\r\n\r\n" . $text . "\r\n.\r\n");
-        $ok = smtpRead($fp) === 250;
-    }
-    @fwrite($fp, "QUIT\r\n");
-    fclose($fp);
-    return $ok;
-}
-
-// Email a visitor from contact@ (plain text, optional PDF attachment). Returns true on success.
-function emailVisitor($password, $to, $subject, $text, $attachPath = '') {
-    $headers = [
-        'From: ' . SITE_NAME . ' <' . FROM_EMAIL . '>',
-        'Reply-To: ' . FROM_EMAIL,
-        'MIME-Version: 1.0',
-    ];
-    if ($attachPath === '') {
-        $headers[] = 'Content-Type: text/plain; charset=UTF-8';
-        $headers[] = 'Content-Transfer-Encoding: 8bit';
-        $body = $text;
-    } else {
-        $boundary = 'scr_' . bin2hex(random_bytes(8));
-        $headers[] = 'Content-Type: multipart/mixed; boundary="' . $boundary . '"';
-        $body  = "--$boundary\r\n";
-        $body .= "Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n";
-        $body .= chunk_split(base64_encode(str_replace("\n", "\r\n", str_replace("\r\n", "\n", $text))));
-        $body .= "--$boundary\r\n";
-        $body .= 'Content-Type: application/pdf; name="' . basename($attachPath) . "\"\r\n";
-        $body .= "Content-Transfer-Encoding: base64\r\n";
-        $body .= 'Content-Disposition: attachment; filename="' . basename($attachPath) . "\"\r\n\r\n";
-        $body .= chunk_split(base64_encode((string) file_get_contents($attachPath)));
-        $body .= "--$boundary--";
-    }
-    return smtpSend($password, $to, encodeSubject($subject), $body, $headers);
-}
-
-function signature() {
-    return "Best regards,\n\nJeanne Barbee, MS, BCBA, LBA\nFounder, " . SITE_NAME . "\n" . FROM_EMAIL . "\nhttps://" . SITE_URL . "\n";
-}
-
 // Welcome letter for beta testers (from "Welcome Beta Full Mock Exam.docx")
-function betaWelcomeText($name) {
+function betaWelcomeText($name, $email) {
     $hi = $name !== '' ? "Hi $name," : 'Hi there,';
+    $link = 'https://' . SITE_URL . '/beta.html?exam=' . BETA_EXAM_ID . '&email=' . rawurlencode($email);
     return $hi . "\n\n"
         . "Thank you so much for volunteering to be a beta tester for The Stimulus Control Room's full RBT mock exam! "
         . "Your feedback is invaluable in making sure this resource is as clear, realistic, and effective as possible.\n\n"
         . "To help capture your genuine test-taking experience and initial instincts before seeing the results, "
         . "we are splitting the feedback process into two brief stages:\n\n"
         . "1. Attached is the RBT Mock Exam (Questions Only) along with an Answer Sheet. "
-        . "Please complete the exam and reply to this email with your completed answer sheet attached.\n\n"
-        . "2. Once I receive your answer sheet, I will reply with a short Phase 1 Survey about your overall "
-        . "impression of the questions, difficulty level, and exam flow.\n\n"
-        . "3. As soon as you return that brief survey, I will send over your full Answer Key & Detailed Explanations, "
+        . "Please complete the exam, then submit your answers at this link:\n"
+        . "   $link\n\n"
+        . "2. As soon as you submit your answers, a short Phase 1 Survey will appear on the same page, asking about "
+        . "your overall impression of the questions, difficulty level, and exam flow.\n\n"
+        . "3. As soon as you submit that brief survey, your full Answer Key & Detailed Explanations will be emailed to you, "
         . "along with your calculated score so you don't have to score it yourself!\n\n"
-        . "Thank you again for your time and insight. Good luck with the exam, and I look forward to receiving "
-        . "your completed answer sheet!\n\n"
+        . "Thank you again for your time and insight. Good luck with the exam, and I look forward to your feedback!\n\n"
         . signature();
 }
 
@@ -194,18 +105,7 @@ if (field('zx_check', 200) !== '' || field('website', 200) !== '') {
 $started = (int) field('started', 20);
 if ($started > 0 && (time() - $started) < MIN_FILL_SECONDS) respond(false, 'Please take a moment and try again.');
 
-// Simple per-IP rate limit
-$ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
-$rateFile = rtrim(sys_get_temp_dir(), '/\\') . '/aep_rate_' . md5($ip);
-$hits = [];
-if (is_readable($rateFile)) {
-    $hits = array_filter(array_map('intval', explode(',', (string) @file_get_contents($rateFile))), function ($t) {
-        return $t > time() - WINDOW_SECONDS;
-    });
-}
-if (count($hits) >= MAX_PER_WINDOW) respond(false, 'Too many messages. Please wait a few minutes.');
-$hits[] = time();
-@file_put_contents($rateFile, implode(',', $hits), LOCK_EX);
+if (!withinRateLimit('aep_rate', MAX_PER_WINDOW, WINDOW_SECONDS)) respond(false, 'Too many messages. Please wait a few minutes.');
 
 $name    = oneLine(field('name', 100));
 $email   = oneLine(field('email', 200));
@@ -215,8 +115,7 @@ $message = field('message', 5000);
 
 if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) respond(false, 'Please enter a valid email address.');
 
-$passFile = $privateDir . '/smtp-password.txt';
-$password = is_readable($passFile) ? trim((string) @file_get_contents($passFile)) : '';
+$password = smtpPassword();
 
 if ($formType === 'waitlist') {
     if ($email === '') respond(false, 'Please enter your email address.');
@@ -249,7 +148,7 @@ if ($formType === 'waitlist') {
     if ($isBeta) {
         if (!is_readable($examPath)) {
             $visitorStatus = 'NOT SENT: the exam PDF is missing from the beta-exams folder on the server. Please email it to them yourself.';
-        } elseif ($password !== '' && emailVisitor($password, $email, 'Your free RBT Mock Exam from ' . SITE_NAME, betaWelcomeText($name), $examPath)) {
+        } elseif ($password !== '' && emailVisitor($password, $email, 'Your free RBT Mock Exam from ' . SITE_NAME, betaWelcomeText($name, $email), $examPath)) {
             $visitorStatus = 'Welcome letter + ' . BETA_EXAM_FILE . ' sent to them automatically.';
             $userMessage = "You're beta tester #$number! We just emailed you the mock exam. Check your inbox (and your spam folder, just in case).";
         } else {
@@ -291,20 +190,9 @@ if ($formType === 'waitlist') {
 
 $body .= "\n--\nSent from the " . SITE_NAME . " website on " . gmdate('Y-m-d H:i') . " UTC.\n";
 
-$headers   = [];
-$headers[] = 'From: ' . SITE_NAME . ' <' . FROM_EMAIL . '>';
-if ($email !== '') $headers[] = 'Reply-To: ' . $email;
-$headers[] = 'MIME-Version: 1.0';
-$headers[] = 'Content-Type: text/plain; charset=UTF-8';
-$headers[] = 'Content-Transfer-Encoding: 8bit';
-
-$encodedSubject = encodeSubject('[' . SITE_NAME . '] ' . $subject);
-
-// 1) SMTP through the real mailbox
-if ($password !== '' && smtpSend($password, TO_EMAIL, $encodedSubject, $body, $headers)) respond(true, '', 'smtp');
-
-// 2) PHP mail() fallback
-if (@mail(TO_EMAIL, $encodedSubject, $body, implode("\r\n", $headers), '-f' . FROM_EMAIL)) respond(true, '', 'mail');
+// 1) SMTP through the real mailbox, 2) PHP mail() fallback
+$via = emailOwner($password, $subject, $body, $email);
+if ($via !== '') respond(true, '', $via);
 
 // 3) Last resort: keep the message in a private file so it is never lost
 $saved = @file_put_contents(

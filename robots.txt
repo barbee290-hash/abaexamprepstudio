@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /send.php
+Disallow: /beta-submit.php
+Disallow: /mailer.php
+Disallow: /beta.html
 
 Sitemap: https://thestimuluscontrolroom.com/sitemap.xml

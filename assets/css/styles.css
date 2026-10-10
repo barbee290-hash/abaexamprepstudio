@@ -413,6 +413,39 @@ body.nav-locked { overflow: hidden; }
 .founder-offer .btn { flex: none; }
 .pt-score + .founder-offer { margin-top: 20px; }
 
+/* Beta mock exam: answer sheet + survey (beta.html) */
+.beta-steps { display: flex; gap: 10px; list-style: none; padding: 0; margin: 22px 0 0; flex-wrap: wrap; }
+.beta-steps li { display: flex; align-items: center; gap: 8px; padding: 8px 16px 8px 8px; border-radius: 999px; background: var(--white); border: 1px solid rgba(23,63,79,.12); font-weight: 700; font-size: .92rem; color: var(--text-soft); }
+.beta-steps li::before { content: attr(data-step-label); display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--cream-200); color: var(--navy); font-size: .82rem; }
+.beta-steps li.is-active { color: var(--navy); border-color: var(--coral); }
+.beta-steps li.is-active::before { background: var(--coral); color: var(--ink-on-coral); }
+.beta-steps li.is-done::before { background: var(--teal); color: var(--white); content: "✓"; }
+.beta-sheet-title { font-size: 1.4rem; margin: 28px 0 4px; }
+.answer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px 22px; margin: 18px 0 8px; }
+.answer-row { display: flex; align-items: center; gap: 6px; border: 0; margin: 0; padding: 4px 0; border-bottom: 1px dashed rgba(23,63,79,.1); }
+.answer-row legend { float: left; width: 2.6em; font-weight: 800; color: var(--navy); font-size: .95rem; padding: 0; }
+.bubble { position: relative; cursor: pointer; }
+.bubble input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.bubble span[aria-hidden] { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid rgba(23,63,79,.35); font-weight: 700; font-size: .88rem; color: var(--navy); background: var(--white); transition: background-color .15s, border-color .15s, color .15s; }
+.bubble:hover span[aria-hidden] { border-color: var(--teal); }
+.bubble input:checked + span { background: var(--teal); border-color: var(--teal); color: var(--white); }
+.bubble input:focus-visible + span { outline: 3px solid var(--coral); outline-offset: 2px; }
+.beta-submit-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-top: 22px; }
+.beta-count { margin: 0; color: var(--text-soft); }
+.survey-q { border: 0; padding: 0; margin: 0 0 22px; display: grid; gap: 8px; }
+.form-card .survey-q { margin: 0 0 6px; padding: 18px 0 20px; border-top: 1px solid rgba(23,63,79,.1); }
+.survey-q legend { font-weight: 700; color: var(--navy); margin-bottom: 8px; padding: 0; }
+.survey-q > label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-weight: 500; }
+.survey-q input[type="radio"], .survey-q input[type="checkbox"] { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--teal); flex: none; }
+.survey-q input:disabled + * , .survey-q label:has(input:disabled) { opacity: .5; cursor: not-allowed; }
+.survey-detail { display: grid; gap: 6px; margin: 4px 0 0 28px; }
+.survey-detail[hidden] { display: none; }
+.beta-done { text-align: center; }
+.beta-done:focus { outline: none; }
+.beta-done-icon { width: 56px; height: 56px; color: var(--success); margin: 0 auto 8px; display: block; }
+.beta-score { font-size: 1.3rem; }
+.beta-done .btn-row { justify-content: center; }
+
 /* FAQ */
 .faq { display: grid; gap: 14px; }
 .faq details { background: var(--white); border-radius: var(--radius); border: 1px solid rgba(23,63,79,.08); box-shadow: var(--shadow-sm); overflow: hidden; transition: box-shadow .3s; }
