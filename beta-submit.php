@@ -142,10 +142,28 @@ function save($store, array $all) {
     fflush($store);
 }
 
-// Exams are taken in order: exam N opens after exam N-1 is finished
+// Exams finished on paper (before the online version existed). Private file, one line per exam:
+//   tester@example.com,1
+function finishedOffline($email, $examId) {
+    global $privateDir;
+    $file = $privateDir . '/beta-exams/completed-offline.txt';
+    if (!is_readable($file)) return false;
+    foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        $parts = array_map('trim', explode(',', strtolower($line)));
+        if ($parts[0] === $email && (int) (isset($parts[1]) ? $parts[1] : 0) === $examId) return true;
+    }
+    return false;
+}
+
+// Exams are taken in order: exam N opens after exam N-1 is finished (online or on paper)
 if ($examId > 1) {
     $prev = isset($all[$email . '|' . ($examId - 1)]) ? $all[$email . '|' . ($examId - 1)] : null;
-    if (!$prev || empty($prev['survey_submitted'])) fail('Please finish RBT Mock Exam ' . ($examId - 1) . ' first. Mock exams open one after another.');
+    if ((!$prev || empty($prev['survey_submitted'])) && !finishedOffline($email, $examId - 1)) {
+        fail('Please finish RBT Mock Exam ' . ($examId - 1) . ' first. Mock exams open one after another.');
+    }
+}
+if (finishedOffline($email, $examId) && !$rec) {
+    fail("Our records show you already completed {$exam['title']} on paper. Thank you! Please continue with RBT Mock Exam " . ($examId + 1) . '.');
 }
 
 if ($rec && !empty($rec['survey_submitted'])) {
