@@ -59,6 +59,7 @@ const SURVEY = [
     'q5' => ['label' => 'Were any questions unclear or confusing?', 'options' => ['No', 'Yes']],
     'q6' => ['label' => 'How have you prepared so far?', 'options' => ['40-hour training only', 'Supervisor or BCBA review', 'Flashcards or apps', 'Other practice exams', 'Study group', 'On-the-job experience only'], 'multi' => 6],
     'q7' => ['label' => 'How did you hear about us?', 'options' => ['Google search', 'Instagram', 'TikTok', 'Facebook group', 'Reddit', 'YouTube', 'Supervisor or BCBA recommendation', 'Coworker or friend', 'Employer or ABA agency', 'Other']],
+    'q9' => ['label' => 'May we share your comments anonymously?', 'options' => ['Yes', 'No']],
 ];
 
 function loadExam($id) {
@@ -223,12 +224,15 @@ foreach (SURVEY as $q => $def) {
 }
 $unclear = post('q5_detail', 2000);
 $otherSource = post('q7_other', 200);
+$comment = post('q8_comment', 2000);
 if ($survey['q5'] === 'Yes' && $unclear === '') fail('Please tell us which question numbers were unclear and why.');
 if ($survey['q7'] === 'Other' && $otherSource === '') fail('Please tell us how you heard about us.');
 
 $rec['survey'] = $survey;
 $rec['q5_detail'] = $unclear;
 $rec['q7_other'] = $otherSource;
+$rec['comment'] = $comment;
+$rec['share_ok'] = $survey['q9'];
 $rec['survey_submitted'] = gmdate('Y-m-d H:i') . ' UTC';
 $res = results($exam, $rec);
 $rec['score'] = $res['correct'] . '/' . $res['count'];
@@ -256,7 +260,7 @@ if ($out = @fopen($csv, 'a')) {
     if ($isNew) {
         fputcsv($out, ['Date (UTC)', 'Email', 'First name', 'Exam', 'Score', 'Percent', 'Minutes used', 'Flag', 'A %', 'B %', 'C %', 'D %', 'E %', 'F %',
             'Exam scheduled', 'Expected score', 'Hardest areas', 'Compared to other practice exams','Unclear questions?', 'Which / why',
-            'How prepared', 'Heard about us', 'Heard about us (other)', 'Answers']);
+            'How prepared', 'Heard about us', 'Heard about us (other)', 'Comments', 'OK to share anonymously', 'Answers']);
     }
     $safe = function ($v) { return preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v; };
     $p = function ($d) use ($dp) { return isset($dp[$d]) ? $dp[$d] : ''; };
@@ -264,7 +268,7 @@ if ($out = @fopen($csv, 'a')) {
         $minutes !== null ? $minutes : '', $flag,
         $p('A'), $p('B'), $p('C'), $p('D'), $p('E'), $p('F'),
         $survey['q1'], $survey['q2'], implode('; ', $survey['q3']), $survey['q4'], $survey['q5'], $safe($unclear),
-        implode('; ', $survey['q6']), $survey['q7'], $safe($otherSource), $safe($rec['answers'])]);
+        implode('; ', $survey['q6']), $survey['q7'], $safe($otherSource), $safe($comment), $survey['q9'], $safe($rec['answers'])]);
     flock($out, LOCK_UN);
     fclose($out);
 }
@@ -283,7 +287,9 @@ $summary = ($fast ? "⚠ POSSIBLE GUESSING: they finished all {$total} questions
     . "4. Compared to other practice exams: {$survey['q4']}\n"
     . "5. Unclear questions: {$survey['q5']}" . ($unclear !== '' ? "\n   $unclear" : '') . "\n"
     . '6. How prepared: ' . implode(', ', $survey['q6']) . "\n"
-    . "7. Heard about us: {$survey['q7']}" . ($otherSource !== '' ? " ($otherSource)" : '') . "\n\n"
+    . "7. Heard about us: {$survey['q7']}" . ($otherSource !== '' ? " ($otherSource)" : '') . "\n"
+    . '8. Comments: ' . ($comment !== '' ? "\n   $comment" : '(none)') . "\n"
+    . "9. OK to share comments anonymously: {$survey['q9']}" . ($survey['q9'] === 'Yes' && $comment !== '' ? '  <-- possible testimonial' : '') . "\n\n"
     . "All survey responses are also saved in beta-survey-responses.csv (File manager, the folder above public_html).\n";
 emailOwner(smtpPassword(), ($fast ? '⚠ FAST ' : '') . "Beta {$exam['title']}:{$res['correct']}/{$res['count']} ({$res['percent']}%) - " . ($name !== '' ? $name : $email), $summary, $email);
 

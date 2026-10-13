@@ -83,7 +83,7 @@
       <!-- Survey -->
       <form id="beta-survey" class="form-card" novalidate hidden>
         <h2 style="font-size:1.7rem">Phase 1 survey</h2>
-        <p class="muted">Your answers are saved. Answer these 7 quick questions to see your score and the full answer review.</p>
+        <p class="muted">Your answers are saved. Answer these quick questions to see your score and the full answer review.</p>
 
         <fieldset class="field survey-q">
           <legend>1. When is your RBT exam scheduled?</legend>
@@ -161,6 +161,18 @@
           </div>
         </fieldset>
 
+        <fieldset class="field survey-q" data-optional>
+          <legend>8. Any other comments about this mock exam? <span class="hint">(optional)</span></legend>
+          <label for="q8-comment" class="sr-only">Your comments</label>
+          <textarea id="q8-comment" name="q8_comment" rows="4" maxlength="2000" placeholder="What did you like? What would make it better?"></textarea>
+        </fieldset>
+
+        <fieldset class="field survey-q">
+          <legend>9. May we share your comments anonymously on our website and social media? <span class="hint">(shown with your first initial only, for example “A.M., RBT candidate”)</span></legend>
+          <label><input type="radio" name="q9" value="Yes"> Yes, you may share my comments anonymously</label>
+          <label><input type="radio" name="q9" value="No"> No, please keep my comments private</label>
+        </fieldset>
+
         <div class="beta-submit-row">
           <span></span>
           <button type="submit" class="btn btn-primary">Submit survey &amp; see my results <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></button>
@@ -230,7 +242,7 @@
   </div>
 </footer>
 
-<script src="assets/js/beta.js?v=4" defer></script>
+<script src="assets/js/beta.js?v=5" defer></script>
 <script src="assets/js/main.js" defer></script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "1fd412b101cb4beaa5135e861800b736"}'></script><!-- End Cloudflare Web Analytics -->
 </body>

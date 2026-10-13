@@ -289,7 +289,7 @@
     e.preventDefault();
     var missing = [];
     surveyForm.querySelectorAll(".survey-q").forEach(function (fs, i) {
-      if (!fs.querySelector("input:checked")) missing.push(i + 1);
+      if (!fs.hasAttribute("data-optional") && !fs.querySelector("input:checked")) missing.push(i + 1);
     });
     if (missing.length) {
       status(surveyForm, "error", "Please answer question" + (missing.length > 1 ? "s " : " ") + missing.join(", ") + ".");
