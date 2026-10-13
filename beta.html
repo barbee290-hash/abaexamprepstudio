@@ -90,12 +90,19 @@
           <label><input type="radio" name="q1" value="Within 2 weeks"> Within 2 weeks</label>
           <label><input type="radio" name="q1" value="2–4 weeks"> 2–4 weeks</label>
           <label><input type="radio" name="q1" value="1–3 months"> 1–3 months</label>
+          <label><input type="radio" name="q1" value="More than 3 months"> More than 3 months</label>
           <label><input type="radio" name="q1" value="Not scheduled yet"> Not scheduled yet</label>
-          <label><input type="radio" name="q1" value="Already taken and did not pass. Retaking."> Already taken and did not pass. Retaking.</label>
         </fieldset>
 
         <fieldset class="field survey-q">
-          <legend>2. What score do you expect on this mock exam?</legend>
+          <legend>2. Have you taken the RBT exam before?</legend>
+          <label><input type="radio" name="q1b" value="No, this will be my first attempt"> No, this will be my first attempt</label>
+          <label><input type="radio" name="q1b" value="Yes, once"> Yes, once</label>
+          <label><input type="radio" name="q1b" value="Yes, two or more times"> Yes, two or more times</label>
+        </fieldset>
+
+        <fieldset class="field survey-q">
+          <legend>3. What score do you expect on this mock exam?</legend>
           <label><input type="radio" name="q2" value="Below 60%"> Below 60%</label>
           <label><input type="radio" name="q2" value="60–69%"> 60–69%</label>
           <label><input type="radio" name="q2" value="70–79%"> 70–79%</label>
@@ -104,7 +111,7 @@
         </fieldset>
 
         <fieldset class="field survey-q" data-max="2">
-          <legend>3. Which content area felt hardest? <span class="hint">(select up to 2)</span></legend>
+          <legend>4. Which content area felt hardest? <span class="hint">(select up to 2)</span></legend>
           <label><input type="checkbox" name="q3[]" value="A"> A. Data Collection and Graphing</label>
           <label><input type="checkbox" name="q3[]" value="B"> B. Behavior Assessment</label>
           <label><input type="checkbox" name="q3[]" value="C"> C. Behavior Acquisition</label>
@@ -114,7 +121,7 @@
         </fieldset>
 
         <fieldset class="field survey-q">
-          <legend>4. How does this mock exam compare to other RBT practice exams you’ve taken?</legend>
+          <legend>5. How does this mock exam compare to other RBT practice exams you’ve taken?</legend>
           <label><input type="radio" name="q4" value="Much easier"> Much easier</label>
           <label><input type="radio" name="q4" value="Somewhat easier"> Somewhat easier</label>
           <label><input type="radio" name="q4" value="About the same"> About the same</label>
@@ -124,7 +131,7 @@
         </fieldset>
 
         <fieldset class="field survey-q">
-          <legend>5. Were any questions unclear or confusing?</legend>
+          <legend>6. Were any questions unclear or confusing?</legend>
           <label><input type="radio" name="q5" value="No"> No</label>
           <label><input type="radio" name="q5" value="Yes"> Yes</label>
           <div class="survey-detail" data-show-when="q5=Yes" hidden>
@@ -134,7 +141,7 @@
         </fieldset>
 
         <fieldset class="field survey-q">
-          <legend>6. How have you prepared so far? <span class="hint">(select all that apply)</span></legend>
+          <legend>7. How have you prepared so far? <span class="hint">(select all that apply)</span></legend>
           <label><input type="checkbox" name="q6[]" value="40-hour training only"> 40-hour training only</label>
           <label><input type="checkbox" name="q6[]" value="Supervisor or BCBA review"> Supervisor or BCBA review</label>
           <label><input type="checkbox" name="q6[]" value="Flashcards or apps"> Flashcards or apps</label>
@@ -144,7 +151,7 @@
         </fieldset>
 
         <fieldset class="field survey-q">
-          <legend>7. How did you hear about us?</legend>
+          <legend>8. How did you hear about us?</legend>
           <label><input type="radio" name="q7" value="Google search"> Google search</label>
           <label><input type="radio" name="q7" value="Instagram"> Instagram</label>
           <label><input type="radio" name="q7" value="TikTok"> TikTok</label>
@@ -154,6 +161,7 @@
           <label><input type="radio" name="q7" value="Supervisor or BCBA recommendation"> Supervisor or BCBA recommendation</label>
           <label><input type="radio" name="q7" value="Coworker or friend"> Coworker or friend</label>
           <label><input type="radio" name="q7" value="Employer or ABA agency"> Employer or ABA agency</label>
+          <label><input type="radio" name="q7" value="AI assistant (ChatGPT, Claude, Gemini, etc.)"> AI assistant (ChatGPT, Claude, Gemini, etc.)</label>
           <label><input type="radio" name="q7" value="Other"> Other</label>
           <div class="survey-detail" data-show-when="q7=Other" hidden>
             <label for="q7-other">Please tell us where</label>
@@ -162,13 +170,13 @@
         </fieldset>
 
         <fieldset class="field survey-q" data-optional>
-          <legend>8. Any other comments about this mock exam? <span class="hint">(optional)</span></legend>
+          <legend>9. Any other comments about this mock exam? <span class="hint">(optional)</span></legend>
           <label for="q8-comment" class="sr-only">Your comments</label>
           <textarea id="q8-comment" name="q8_comment" rows="4" maxlength="2000" placeholder="What did you like? What would make it better?"></textarea>
         </fieldset>
 
         <fieldset class="field survey-q">
-          <legend>9. May we share your comments anonymously on our website and social media? <span class="hint">(shown with your first initial only, for example “A.M., RBT candidate”)</span></legend>
+          <legend>10. May we share your comments anonymously on our website and social media? <span class="hint">(shown with your first initial only, for example “A.M., RBT candidate”)</span></legend>
           <label><input type="radio" name="q9" value="Yes"> Yes, you may share my comments anonymously</label>
           <label><input type="radio" name="q9" value="No"> No, please keep my comments private</label>
         </fieldset>
@@ -242,7 +250,7 @@
   </div>
 </footer>
 
-<script src="assets/js/beta.js?v=5" defer></script>
+<script src="assets/js/beta.js?v=6" defer></script>
 <script src="assets/js/main.js" defer></script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "1fd412b101cb4beaa5135e861800b736"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
