@@ -577,6 +577,8 @@ fieldset.field { border: 0; padding: 0; margin: 0; }
 .reveal-delay-4 { transition-delay: .32s; }
 .reveal-delay-5 { transition-delay: .4s; }
 .no-js .reveal { opacity: 1; transform: none; }
+/* Top-of-page content shows immediately (no fade-in), so slow phones see it right away (better LCP) */
+.hero .reveal, .page-hero .reveal { opacity: 1; transform: none; transition: none; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
 /* ---------- Quiz ---------- */
