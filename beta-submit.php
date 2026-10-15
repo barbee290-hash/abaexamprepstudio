@@ -258,6 +258,8 @@ $csv = $privateDir . '/beta-survey-responses.csv';
 $isNew = !file_exists($csv) || filesize($csv) === 0 || trim((string) file_get_contents($csv)) === ''; // missing or emptied: add the header row
 if ($out = @fopen($csv, 'a')) {
     flock($out, LOCK_EX);
+    $tail = $isNew ? '' : (string) file_get_contents($csv, false, null, max(0, filesize($csv) - 1));
+    if (!$isNew && $tail !== "\n") fwrite($out, "\n"); // hand-edited file without a final line break
     if ($isNew) {
         fputcsv($out, ['Date (UTC)', 'Email', 'First name', 'Exam', 'Score', 'Percent', 'Minutes used', 'Flag', 'A %', 'B %', 'C %', 'D %', 'E %', 'F %',
             'Exam scheduled', 'Taken before?', 'Expected score', 'Hardest areas', 'Compared to other practice exams','Unclear questions?', 'Which / why',

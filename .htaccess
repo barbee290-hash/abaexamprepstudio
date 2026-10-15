@@ -19,6 +19,10 @@ DirectoryIndex index.html index.php
   # www.thestimuluscontrolroom.com -> thestimuluscontrolroom.com
   RewriteCond %{HTTP_HOST} ^www\.thestimuluscontrolroom\.com$ [NC]
   RewriteRule ^(.*)$ https://thestimuluscontrolroom.com/$1 [R=301,L]
+  # Robots guess WordPress-style sitemap names (sitemap_index.xml, wp-sitemap.xml,
+  # sitemap-1.xml...). Send them to the real sitemap instead of the 404 page.
+  RewriteRule ^(wp-)?sitemap[_-][^/]*\.xml$ /sitemap.xml [R=301,L,NC]
+  RewriteRule ^wp-sitemap\.xml$ /sitemap.xml [R=301,L,NC]
 </IfModule>
 
 # Compress text files

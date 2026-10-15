@@ -136,6 +136,8 @@ if ($formType === 'waitlist') {
     if ($fh = @fopen($csvFile, 'a')) {
         flock($fh, LOCK_EX);
         if ($isNew) fputcsv($fh, ['#', 'Date (UTC)', 'Time (UTC)', 'Email', 'First name', 'Signed up from', 'Offer']);
+        // If the file was hand-edited and saved without a final line break, start a new line first
+        elseif (substr($existing, -1) !== "\n") fwrite($fh, "\n");
         // Leading = + - @ would be read as a formula by spreadsheets
         $cell = function ($v) { return preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v; };
         $offer = $repeat ? 'Repeat sign-up' : ($isBeta ? 'Free beta mock exam (first ' . BETA_SPOTS . ')' : 'Waitlist + 25% Founders Discount');
