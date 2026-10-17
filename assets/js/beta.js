@@ -281,8 +281,8 @@
   surveyForm.addEventListener("change", function () {
     surveyForm.querySelectorAll("[data-show-when]").forEach(function (box) {
       var parts = box.getAttribute("data-show-when").split("=");
-      var picked = surveyForm.querySelector("input[name='" + parts[0] + "']:checked");
-      box.hidden = !(picked && picked.value === parts[1]);
+      var picked = Array.prototype.some.call(surveyForm.querySelectorAll("input[name='" + parts[0] + "']:checked"), function (el) { return el.value === parts[1]; });
+      box.hidden = !picked;
     });
   });
   surveyForm.addEventListener("submit", function (e) {

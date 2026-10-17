@@ -52,14 +52,13 @@ const DOMAINS = [
 ];
 
 const SURVEY = [
-    'q1' => ['label' => 'When is your RBT exam scheduled?', 'options' => ['Within 2 weeks', '2–4 weeks', '1–3 months', 'More than 3 months', 'Not scheduled yet']],
+    'q_rating' => ['label' => 'How well does this website provide the resources you need to prepare for and pass the RBT exam? (star rating)', 'options' => ['1', '2', '3', '4', '5']],
     'q1b' => ['label' => 'Have you taken the RBT exam before?', 'options' => ['No, this will be my first attempt', 'Yes, once', 'Yes, two or more times']],
-    'q2' => ['label' => 'What score do you expect on this mock exam?', 'options' => ['Below 60%', '60–69%', '70–79%', '80–89%', '90% or higher']],
-    'q3' => ['label' => 'Which content area felt hardest? (up to 2)', 'options' => ['A', 'B', 'C', 'D', 'E', 'F'], 'multi' => 2],
+    'q3' => ['label' => 'Which content areas did you find most difficult? (up to 2)', 'options' => ['A', 'B', 'C', 'D', 'E', 'F'], 'multi' => 2],
     'q4' => ['label' => 'How does this mock exam compare to other RBT practice exams you have taken?', 'options' => ['Much easier', 'Somewhat easier', 'About the same', 'Somewhat harder', 'Much harder', "I haven't taken any other practice exams"]],
-    'q5' => ['label' => 'Were any questions unclear or confusing?', 'options' => ['No', 'Yes']],
-    'q6' => ['label' => 'How have you prepared so far?', 'options' => ['40-hour training only', 'Supervisor or BCBA review', 'Flashcards or apps', 'Other practice exams', 'Study group', 'On-the-job experience only'], 'multi' => 6],
-    'q7' => ['label' => 'How did you hear about us?', 'options' => ['Google search', 'Instagram', 'TikTok', 'Facebook group', 'Reddit', 'YouTube', 'Supervisor or BCBA recommendation', 'Coworker or friend', 'Employer or ABA agency', 'AI assistant (ChatGPT, Claude, Gemini, etc.)', 'Other']],
+    'q5' => ['label' => 'Were any questions or sections of this mock exam unclear or confusing?', 'options' => ['No', 'Yes']],
+    'q6' => ['label' => 'What other resources would help you prepare for the exam?', 'options' => ['Online course', 'Mentorship (regularly scheduled 1:1 calls)', 'Flashcards or study apps', 'More practice exams', 'Study group', 'On-the-job experience', 'Other'], 'multi' => 7],
+    'q7' => ['label' => 'How did you find this website?', 'options' => ['Google search', 'Instagram', 'TikTok', 'Facebook group', 'Reddit', 'YouTube', 'Supervisor or BCBA recommendation', 'Coworker or friend', 'Employer or ABA agency', 'AI assistant (ChatGPT, Claude, Gemini, etc.)', 'Other']],
     'q9' => ['label' => 'May we share your comments anonymously?', 'options' => ['Yes', 'No']],
 ];
 
@@ -226,12 +225,15 @@ foreach (SURVEY as $q => $def) {
 $unclear = post('q5_detail', 2000);
 $otherSource = post('q7_other', 200);
 $comment = post('q8_comment', 2000);
-if ($survey['q5'] === 'Yes' && $unclear === '') fail('Please tell us which question numbers were unclear and why.');
+$otherResource = post('q6_other', 200);
+if ($survey['q5'] === 'Yes' && $unclear === '') fail('Please tell us which question numbers or sections were unclear and why.');
+if (in_array('Other', $survey['q6'], true) && $otherResource === '') fail('Please specify the other resource that would help you.');
 if ($survey['q7'] === 'Other' && $otherSource === '') fail('Please tell us how you heard about us.');
 
 $rec['survey'] = $survey;
 $rec['q5_detail'] = $unclear;
 $rec['q7_other'] = $otherSource;
+$rec['q6_other'] = $otherResource;
 $rec['comment'] = $comment;
 $rec['share_ok'] = $survey['q9'];
 $rec['survey_submitted'] = gmdate('Y-m-d H:i') . ' UTC';
@@ -262,16 +264,16 @@ if ($out = @fopen($csv, 'a')) {
     if (!$isNew && $tail !== "\n") fwrite($out, "\n"); // hand-edited file without a final line break
     if ($isNew) {
         fputcsv($out, ['Date (UTC)', 'Email', 'First name', 'Exam', 'Score', 'Percent', 'Minutes used', 'Flag', 'A %', 'B %', 'C %', 'D %', 'E %', 'F %',
-            'Exam scheduled', 'Taken before?', 'Expected score', 'Hardest areas', 'Compared to other practice exams','Unclear questions?', 'Which / why',
-            'How prepared', 'Heard about us', 'Heard about us (other)', 'Comments', 'OK to share anonymously', 'Answers']);
+            'Site rating (1-5 stars)', 'Taken before?', 'Hardest areas', 'Compared to other practice exams', 'Unclear questions?', 'Which / why',
+            'Resources that would help', 'Resources (other)', 'Found us via', 'Found us via (other)', 'Feedback', 'OK to share anonymously', 'Answers']);
     }
     $safe = function ($v) { return preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v; };
     $p = function ($d) use ($dp) { return isset($dp[$d]) ? $dp[$d] : ''; };
     fputcsv($out, [gmdate('Y-m-d H:i'), $safe($email), $safe($name), $exam['title'], $rec['score'], $res['percent'],
         $minutes !== null ? $minutes : '', $flag,
         $p('A'), $p('B'), $p('C'), $p('D'), $p('E'), $p('F'),
-        $survey['q1'], $survey['q1b'], $survey['q2'], implode('; ', $survey['q3']), $survey['q4'], $survey['q5'], $safe($unclear),
-        implode('; ', $survey['q6']), $survey['q7'], $safe($otherSource), $safe($comment), $survey['q9'], $safe($rec['answers'])]);
+        $survey['q_rating'], $survey['q1b'], implode('; ', $survey['q3']), $survey['q4'], $survey['q5'], $safe($unclear),
+        implode('; ', $survey['q6']), $safe($otherResource), $survey['q7'], $safe($otherSource), $safe($comment), $survey['q9'], $safe($rec['answers'])]);
     flock($out, LOCK_UN);
     fclose($out);
 }
@@ -283,18 +285,17 @@ $summary = ($fast ? "⚠ POSSIBLE GUESSING: they finished all {$total} questions
     . 'Name:  ' . ($name !== '' ? $name : '(not given)') . "\nEmail: $email\n"
     . "Score: {$res['correct']} of {$res['count']} scored questions ({$res['percent']}%)"
     . (isset($rec['minutes_used']) ? "\nTime:  about {$rec['minutes_used']} minutes" : '') . "\n\nBy content area:\n$domainLines\n"
-    . "PHASE 1 SURVEY\n"
-    . "1. Exam scheduled: {$survey['q1']}\n"
+    . "SURVEY\n"
+    . "1. Site rating: " . str_repeat('*', (int) $survey['q_rating']) . " ({$survey['q_rating']}/5)\n"
     . "2. Taken the RBT exam before: {$survey['q1b']}\n"
-    . "3. Expected score: {$survey['q2']}\n"
-    . '4. Hardest areas: ' . implode(', ', $survey['q3']) . "\n"
-    . "5. Compared to other practice exams: {$survey['q4']}\n"
-    . "6. Unclear questions: {$survey['q5']}" . ($unclear !== '' ? "\n   $unclear" : '') . "\n"
-    . '7. How prepared: ' . implode(', ', $survey['q6']) . "\n"
-    . "8. Heard about us: {$survey['q7']}" . ($otherSource !== '' ? " ($otherSource)" : '') . "\n"
-    . '9. Comments: ' . ($comment !== '' ? "\n   $comment" : '(none)') . "\n"
-    . "10. OK to share comments anonymously: {$survey['q9']}" . ($survey['q9'] === 'Yes' && $comment !== '' ? '  <-- possible testimonial' : '') . "\n\n"
+    . '3. Most difficult areas: ' . implode(', ', $survey['q3']) . "\n"
+    . "4. Compared to other practice exams: {$survey['q4']}\n"
+    . "5. Unclear questions or sections: {$survey['q5']}" . ($unclear !== '' ? "\n   $unclear" : '') . "\n"
+    . '6. Resources that would help: ' . implode(', ', $survey['q6']) . ($otherResource !== '' ? " ($otherResource)" : '') . "\n"
+    . "7. Found us via: {$survey['q7']}" . ($otherSource !== '' ? " ($otherSource)" : '') . "\n"
+    . '8. Feedback: ' . ($comment !== '' ? "\n   $comment" : '(none)') . "\n"
+    . "9. OK to share comments anonymously: {$survey['q9']}" . ($survey['q9'] === 'Yes' && $comment !== '' ? '  <-- possible testimonial' : '') . "\n\n"
     . "All survey responses are also saved in beta-survey-responses.csv (File manager, the folder above public_html).\n";
-emailOwner(smtpPassword(), ($fast ? '⚠ FAST ' : '') . "Beta {$exam['title']}:{$res['correct']}/{$res['count']} ({$res['percent']}%) - " . ($name !== '' ? $name : $email), $summary, $email);
+emailOwner(smtpPassword(), ($fast ? '⚠ FAST ' : '') . "Beta {$exam['title']}: {$res['correct']}/{$res['count']} ({$res['percent']}%) - " . ($name !== '' ? $name : $email), $summary, $email);
 
 reply(true, ['status' => 'results', 'name' => $name, 'results' => $res]);
