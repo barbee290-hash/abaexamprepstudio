@@ -59,7 +59,7 @@ const SURVEY = [
     'q5' => ['label' => 'Were any questions or sections of this mock exam unclear or confusing?', 'options' => ['No', 'Yes']],
     'q6' => ['label' => 'What other resources would help you prepare for the exam?', 'options' => ['Online course', 'Mentorship (regularly scheduled 1:1 calls)', 'Flashcards or study apps', 'More practice exams', 'Study group', 'On-the-job experience', 'Other'], 'multi' => 7],
     'q7' => ['label' => 'How did you find this website?', 'options' => ['Google search', 'Instagram', 'TikTok', 'Facebook group', 'Reddit', 'YouTube', 'Supervisor or BCBA recommendation', 'Coworker or friend', 'Employer or ABA agency', 'AI assistant (ChatGPT, Claude, Gemini, etc.)', 'Other']],
-    'q9' => ['label' => 'May we share your comments anonymously?', 'options' => ['Yes', 'No']],
+    'q9' => ['label' => 'Permission to quote or share your feedback', 'options' => ['Yes, with my name', 'Yes, anonymously', 'No']],
 ];
 
 function loadExam($id) {
@@ -265,7 +265,7 @@ if ($out = @fopen($csv, 'a')) {
     if ($isNew) {
         fputcsv($out, ['Date (UTC)', 'Email', 'First name', 'Exam', 'Score', 'Percent', 'Minutes used', 'Flag', 'A %', 'B %', 'C %', 'D %', 'E %', 'F %',
             'Site rating (1-5 stars)', 'Taken before?', 'Hardest areas', 'Compared to other practice exams', 'Unclear questions?', 'Which / why',
-            'Resources that would help', 'Resources (other)', 'Found us via', 'Found us via (other)', 'Feedback', 'OK to share anonymously', 'Answers']);
+            'Resources that would help', 'Resources (other)', 'Found us via', 'Found us via (other)', 'Feedback', 'Permission to quote', 'Answers']);
     }
     $safe = function ($v) { return preg_match('/^[=+\-@]/', $v) ? "'" . $v : $v; };
     $p = function ($d) use ($dp) { return isset($dp[$d]) ? $dp[$d] : ''; };
@@ -294,7 +294,7 @@ $summary = ($fast ? "⚠ POSSIBLE GUESSING: they finished all {$total} questions
     . '6. Resources that would help: ' . implode(', ', $survey['q6']) . ($otherResource !== '' ? " ($otherResource)" : '') . "\n"
     . "7. Found us via: {$survey['q7']}" . ($otherSource !== '' ? " ($otherSource)" : '') . "\n"
     . '8. Feedback: ' . ($comment !== '' ? "\n   $comment" : '(none)') . "\n"
-    . "9. OK to share comments anonymously: {$survey['q9']}" . ($survey['q9'] === 'Yes' && $comment !== '' ? '  <-- possible testimonial' : '') . "\n\n"
+    . "9. Permission to quote feedback: {$survey['q9']}" . ($survey['q9'] !== 'No' && $comment !== '' ? '  <-- possible testimonial' : '') . "\n\n"
     . "All survey responses are also saved in beta-survey-responses.csv (File manager, the folder above public_html).\n";
 emailOwner(smtpPassword(), ($fast ? '⚠ FAST ' : '') . "Beta {$exam['title']}: {$res['correct']}/{$res['count']} ({$res['percent']}%) - " . ($name !== '' ? $name : $email), $summary, $email);
 
