@@ -13,6 +13,9 @@
   var MOCK_MIX = { A: 3, B: 2, C: 5, D: 4, E: 3, F: 3 };
   // Real exam pace: 85 questions in 90 minutes, so 20 questions get 21 minutes
   var EXAM_SECONDS = 21 * 60;
+  // Section quizzes: 10 sample questions, 11 minutes (mirrors real exam pace)
+  var SECTION_COUNT = 10;
+  var SECTION_SECONDS = 11 * 60;
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var params = new URLSearchParams(location.search);
@@ -57,7 +60,7 @@
       });
       picked = shuffle(picked);
     } else {
-      picked = shuffle(BANK[setKey]).map(function (q) { return { d: setKey, src: q }; });
+      picked = shuffle(BANK[setKey]).slice(0, SECTION_COUNT).map(function (q) { return { d: setKey, src: q }; });
     }
     return picked.map(function (p) {
       var opts = p.src.o.map(function (text, i) { return { text: text, correct: i === 0 }; });
@@ -72,7 +75,7 @@
     var best = readBest()[storageKey];
     var desc = isMock
       ? "Twenty questions drawn from all six domains of the 2026 RBT® Test Content Outline, in roughly the same proportions as the real exam. You get a different mix every attempt."
-      : "Twenty original questions covering the tasks in Section " + setKey + " (" + DOMAINS[setKey].name + "). This section makes up about " + DOMAINS[setKey].weight + "% of the real RBT® exam (" + DOMAINS[setKey].items + " of 75 scored questions).";
+      : "Ten sample questions covering key tasks in Section " + setKey + " (" + DOMAINS[setKey].name + "). This section makes up about " + DOMAINS[setKey].weight + "% of the real RBT® exam (" + DOMAINS[setKey].items + " of 75 scored questions). Want more? The full section quiz is available in the complete question bank.";
 
     app.innerHTML =
       '<div class="quiz-intro">' +
@@ -81,8 +84,8 @@
           "<h1>" + esc(title()) + "</h1>" +
           '<p class="lead">' + desc + "</p>" +
           '<div class="quiz-facts">' +
-            '<span class="pill pill-light">' + icon("i-list") + " 20 questions</span>" +
-            '<span class="pill pill-light">' + icon("i-clock") + " 21 min in Exam mode</span>" +
+            '<span class="pill pill-light">' + icon("i-list") + (isMock ? " 20 questions" : " 10 questions") + "</span>" +
+            '<span class="pill pill-light">' + icon("i-clock") + (isMock ? " 21 min in Exam mode" : " 11 min in Exam mode") + "</span>" +
             '<span class="pill pill-light">' + icon("i-heart") + " Free, no sign-up</span>" +
             (best != null ? '<span class="pill pill-light">' + icon("i-star") + " Your best: " + best + "%</span>" : "") +
           "</div>" +
@@ -92,7 +95,7 @@
               '<div class="mode-option"><input type="radio" name="mode" id="mode-study" value="study" checked>' +
                 '<label for="mode-study"><span class="radio"></span><span><strong>Study mode</strong><span class="desc">See whether you’re right, with an explanation, after every question. Best for learning.</span></span></label></div>' +
               '<div class="mode-option"><input type="radio" name="mode" id="mode-exam" value="exam">' +
-                '<label for="mode-exam"><span class="radio"></span><span><strong>Exam mode</strong><span class="desc">21-minute timer, flag questions, move freely, then see your score and full review at the end. Best for test-day practice.</span></span></label></div>' +
+                '<label for="mode-exam"><span class="radio"></span><span><strong>Exam mode</strong><span class="desc">' + (isMock ? "21" : "11") + '-minute timer, flag questions, move freely, then see your score and full review at the end. Best for test-day practice.</span></span></label></div>' +
             "</fieldset>" +
             '<div class="btn-row"><button type="submit" class="btn btn-primary">Start quiz ' + icon("i-arrow", "arrow") + '</button>' +
             '<a class="btn btn-outline" href="practice.html#sections">Choose another section</a></div>' +
@@ -126,7 +129,7 @@
       locked: [],
       flags: [],
       i: 0,
-      remaining: EXAM_SECONDS,
+      remaining: isMock ? EXAM_SECONDS : SECTION_SECONDS,
       done: false
     };
     for (var k = 0; k < state.qs.length; k++) { state.answers.push(null); state.locked.push(false); state.flags.push(false); }

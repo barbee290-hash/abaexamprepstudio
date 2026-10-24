@@ -9,6 +9,7 @@
   var SECTIONS = window.AEP_SECTIONS;
   var ICONS = "assets/img/icons.svg#";
   var TIMING_MS = 60 * 1000;
+  var SAMPLE_COUNT = 22; // free sample for ALL deck
   var STORE = "aep-safmeds-v1";
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -30,6 +31,7 @@
     return a;
   }
   function deckCards(key) { return key === "ALL" ? TERMS : TERMS.filter(function (c) { return c.s === key; }); }
+  function sampleCards(key) { var cards = deckCards(key); return key === "ALL" ? cards.slice(0, SAMPLE_COUNT) : cards; }
   function deckName(key) { return key === "ALL" ? "All sections" : "Section " + key + ": " + SECTIONS[key]; }
   function today() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
   function readHistory() { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch (e) { return {}; } }
@@ -105,10 +107,10 @@
           '<h2 class="sm-h">Choose a deck</h2>' +
           '<div class="sm-decks" role="radiogroup" aria-label="Deck">' +
             keys.map(function (k) {
-              var n = deckCards(k).length;
+              var n = sampleCards(k).length;
               return '<button type="button" role="radio" class="sm-deck" data-deck="' + k + '" aria-checked="' + (k === deckKey) + '">' +
                 '<span class="sm-deck-letter">' + (k === "ALL" ? icon("d-mock") : k) + "</span>" +
-                "<span><strong>" + (k === "ALL" ? "All sections" : esc(SECTIONS[k])) + "</strong><small>" + n + " cards</small></span></button>";
+                "<span><strong>" + (k === "ALL" ? "All sections" : esc(SECTIONS[k])) + "</strong><small>" + n + (k === "ALL" ? " sample cards" : " cards") + "</small></span></button>";
             }).join("") +
           "</div>" +
           '<div class="btn-row mt-2">' +
@@ -116,6 +118,7 @@
             '<a class="btn btn-outline" href="safmeds-print.html?deck=' + deckKey + '">' + icon("i-book") + " Print these cards</a>" +
           "</div>" +
           '<p class="form-note">Keyboard: <span class="kbd">Space</span> flip · <span class="kbd">→</span> correct · <span class="kbd">←</span> error</p>' +
+          '<div class="callout mt-2"><svg aria-hidden="true"><use href="' + ICONS + 'i-bulb"></use></svg><p><strong>Free sample: 22 cards.</strong> The full deck (219 cards covering every RBT term across all six sections) will be available for $30. <a href="full-exams.html">See all study tools</a></p></div>' +
         "</div>" +
         '<div class="sm-setup-side">' +
           '<h2 class="sm-h">Your progress: ' + esc(deckName(deckKey)) + "</h2>" +
@@ -139,7 +142,7 @@
   /* ---------- timing ---------- */
   function start() {
     run = {
-      queue: shuffle(deckCards(deckKey)),
+      queue: shuffle(sampleCards(deckKey)),
       i: 0,
       flipped: false,
       correct: 0,
@@ -168,7 +171,7 @@
   }
 
   function current() {
-    if (run.i >= run.queue.length) { run.queue = shuffle(deckCards(deckKey)); run.i = 0; }
+    if (run.i >= run.queue.length) { run.queue = shuffle(sampleCards(deckKey)); run.i = 0; }
     return run.queue[run.i];
   }
 
