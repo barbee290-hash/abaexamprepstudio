@@ -9,6 +9,7 @@
 
   var TERMS = window.AEP_TERMS;
   var SECTIONS = window.AEP_SECTIONS;
+  var SAMPLE = { ALL: 22, A: 5, B: 3, C: 5, D: 3, E: 3, F: 3 };
   var pageStyle = document.createElement("style");
   pageStyle.id = "print-page-size";
   document.head.appendChild(pageStyle);
@@ -34,7 +35,8 @@
 
   function render() {
     var deck = val("deck"), format = val("format"), sides = val("sides");
-    var cards = deck === "ALL" ? TERMS : TERMS.filter(function (c) { return c.s === deck; });
+    var allCards = deck === "ALL" ? TERMS : TERMS.filter(function (c) { return c.s === deck; });
+    var cards = allCards.slice(0, SAMPLE[deck] || allCards.length);
     var html = "", pages = 0;
 
     if (format === "cards") {
