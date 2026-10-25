@@ -97,7 +97,7 @@
   function renderSetup() {
     stopTick();
     run = null;
-    var keys = ["ALL"].concat(Object.keys(SECTIONS));
+    var keys = ["ALL"];
     var hist = readHistory()[deckKey] || [];
     var best = hist.length ? hist.reduce(function (a, r) { return r.c > a.c ? r : a; }) : null;
 
