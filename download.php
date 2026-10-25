@@ -13,12 +13,11 @@ declare(strict_types=1);
  *   downloads/
  *     RBT-Mock-Exam-1.pdf
  *     study-guide/          ← all concept PDFs go here
- *       Concept-01-....pdf
- *       Concept-02-....pdf
- *       ...
+ *     safmeds/              ← SAFMEDS printable PDFs go here
  *
- * Success URL in Lemon Squeezy checkout:
- *   https://thestimuluscontrolroom.com/download.php?order_id={order_id}
+ * In Lemon Squeezy: enable "Generate license keys" on each product.
+ * Confirmation modal Button link:
+ *   https://thestimuluscontrolroom.com/download.php?license_key=[license_key]
  */
 
 
@@ -92,18 +91,20 @@ function showError(string $message, string $email = ''): void
 
 
 /* -------------------------------------------------------
-   Lemon Squeezy API helper
+   Lemon Squeezy license validation helper
 ------------------------------------------------------- */
 
-function lsGet(string $url, string $key): array
+function lsValidateLicense(string $licenseKey, string $apiKey): array
 {
-    $ch = curl_init($url);
+    $ch = curl_init('https://api.lemonsqueezy.com/v1/licenses/validate');
 
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => http_build_query(['license_key' => $licenseKey]),
         CURLOPT_HTTPHEADER     => [
-            'Authorization: Bearer ' . $key,
-            'Accept: application/vnd.api+json',
+            'Authorization: Bearer ' . $apiKey,
+            'Accept: application/json',
         ],
         CURLOPT_TIMEOUT => 15,
     ]);
@@ -120,8 +121,8 @@ function lsGet(string $url, string $key): array
 
     $data = json_decode($response, true);
 
-    if ($status < 200 || $status >= 300 || !is_array($data)) {
-        throw new RuntimeException('Payment provider could not verify this purchase.');
+    if (!is_array($data)) {
+        throw new RuntimeException('Invalid response from payment provider.');
     }
 
     return $data;
@@ -263,18 +264,18 @@ if (!$lsApiKey) {
 
 
 /* -------------------------------------------------------
-   Get and validate order ID
+   Get and validate license key
 ------------------------------------------------------- */
 
-$orderId = $_GET['order_id'] ?? '';
+$licenseKey = trim($_GET['license_key'] ?? '');
 
-if (!$orderId || !preg_match('/^\d+$/', $orderId)) {
-    showError('We could not find a valid order.', $contactEmail);
+if (!$licenseKey) {
+    showError('We could not find a valid license key.', $contactEmail);
 }
 
 
 /* -------------------------------------------------------
-   Verify order with Lemon Squeezy
+   Verify license key with Lemon Squeezy
 ------------------------------------------------------- */
 
 $createdAt   = 0;
@@ -282,31 +283,19 @@ $productName = '';
 
 try {
 
-    $orderData = lsGet(
-        'https://api.lemonsqueezy.com/v1/orders/' .
-        rawurlencode($orderId) .
-        '?include=order-items',
-        $lsApiKey
-    );
+    $result = lsValidateLicense($licenseKey, $lsApiKey);
 
-    $attrs = $orderData['data']['attributes'] ?? [];
-
-    if (($attrs['status'] ?? '') !== 'paid') {
-        showError('This order has not been confirmed as paid.', $contactEmail);
+    if (empty($result['valid'])) {
+        showError('This license key could not be verified.', $contactEmail);
     }
 
-    $createdAt = strtotime((string)($attrs['created_at'] ?? ''));
+    $createdAt = strtotime((string)($result['license_key']['created_at'] ?? ''));
 
     if (!$createdAt || time() > $createdAt + (7 * 24 * 60 * 60)) {
-        showError('This download link has expired.', $contactEmail);
+        showError('This download link has expired (7-day limit).', $contactEmail);
     }
 
-    foreach (($orderData['included'] ?? []) as $item) {
-        if (($item['type'] ?? '') === 'order-items') {
-            $productName = trim((string)($item['attributes']['product_name'] ?? ''));
-            break;
-        }
-    }
+    $productName = trim((string)($result['meta']['product_name'] ?? ''));
 
 } catch (Throwable $e) {
     showError('We were unable to verify your purchase.', $contactEmail);
@@ -337,7 +326,7 @@ if (!is_dir($stateDir)) {
     @mkdir($stateDir, 0700, true);
 }
 
-$stateFile = $stateDir . '/' . hash('sha256', $orderId) . '.json';
+$stateFile = $stateDir . '/' . hash('sha256', $licenseKey) . '.json';
 
 
 /* -------------------------------------------------------
@@ -419,7 +408,7 @@ $count            = getDownloadCount($stateFile);
 $remaining        = max(0, 10 - $count);
 $expiresFormatted = date('F j, Y', $createdAt + (7 * 24 * 60 * 60));
 
-$safeOrderId     = urlencode($orderId);
+$safeLicenseKey  = urlencode($licenseKey);
 $safeProductName = htmlspecialchars($productName, ENT_QUOTES, 'UTF-8');
 
 ?>
@@ -497,7 +486,7 @@ $safeProductName = htmlspecialchars($productName, ENT_QUOTES, 'UTF-8');
         <?php foreach ($product['files'] as $file): ?>
             <a
                 class="download"
-                href="?order_id=<?= $safeOrderId ?>&amp;file=<?= urlencode($file) ?>"
+                href="?license_key=<?= $safeLicenseKey ?>&amp;file=<?= urlencode($file) ?>"
             >
                 Download <?= htmlspecialchars($file, ENT_QUOTES, 'UTF-8') ?>
             </a>
@@ -509,7 +498,7 @@ $safeProductName = htmlspecialchars($productName, ENT_QUOTES, 'UTF-8');
 
         <a
             class="download"
-            href="?order_id=<?= $safeOrderId ?>&amp;zip=1"
+            href="?license_key=<?= $safeLicenseKey ?>&amp;zip=1"
         >
             Download <?= htmlspecialchars($product['zipname'], ENT_QUOTES, 'UTF-8') ?>
         </a>
