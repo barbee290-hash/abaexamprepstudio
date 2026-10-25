@@ -118,7 +118,7 @@
             '<a class="btn btn-outline" href="safmeds-print.html?deck=' + deckKey + '">' + icon("i-book") + " Print these cards</a>" +
           "</div>" +
           '<p class="form-note">Keyboard: <span class="kbd">Space</span> flip · <span class="kbd">→</span> correct · <span class="kbd">←</span> error</p>' +
-          '<div class="callout mt-2"><svg aria-hidden="true"><use href="' + ICONS + 'i-bulb"></use></svg><p><strong>Free sample: 22 cards.</strong> The full deck (219 cards covering every RBT term across all six sections) will be available for $30. <a href="full-exams.html">See all study tools</a></p></div>' +
+          '<div class="callout mt-2"><svg aria-hidden="true"><use href="' + ICONS + 'i-bulb"></use></svg><p><strong>Free sample: 22 cards.</strong> The full deck (219 cards covering every RBT term across all six sections) is available for $30. <a href="full-exams.html">See all study tools</a></p></div>' +
         "</div>" +
         '<div class="sm-setup-side">' +
           '<h2 class="sm-h">Your progress: ' + esc(deckName(deckKey)) + "</h2>" +
