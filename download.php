@@ -31,7 +31,7 @@ $products = [
 
     'RBT Single Mock Exam' => [
         'type'  => 'files',
-        'files' => ['RBT-Mock-Exam-1.pdf'],
+        'files' => ['RBT_Mock_Exam_1.pdf', 'RBT_Mock_Exam_1_Answer_Key.pdf'],
     ],
 
     'RBT 3rd Edition Test Content Study Guide' => [
