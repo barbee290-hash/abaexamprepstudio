@@ -267,6 +267,18 @@
     hub.classList.add('visible');
   }
 
+  // Auto-unlock via URL parameter (Creem Return URL: ?unlock=MOCKRBT2026)
+  try {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('unlock') === VALID_CODE) {
+      localStorage.setItem(STORAGE_KEY, 'true');
+      // Clean the code out of the URL so it's not visible or shareable
+      history.replaceState(null, '', window.location.pathname);
+      unlock();
+      return;
+    }
+  } catch(e) {}
+
   // Already unlocked in this browser?
   try {
     if (localStorage.getItem(STORAGE_KEY) === 'true') { unlock(); return; }
