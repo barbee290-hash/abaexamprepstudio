@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Full Mock Exams | The Stimulus Control Room</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+  /* Gate overlay */
+  #exam-gate {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .gate-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(23,63,79,.07);
+    padding: clamp(2rem, 5vw, 3.5rem);
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+  }
+  .gate-icon {
+    width: 56px; height: 56px;
+    background: var(--teal-50);
+    border-radius: 16px;
+    display: grid; place-items: center;
+    margin: 0 auto 1.5rem;
+    color: var(--teal);
+  }
+  .gate-icon svg { width: 28px; height: 28px; }
+  .gate-card h1 { font-size: 1.6rem; margin: 0 0 .5rem; }
+  .gate-card p { color: var(--text-soft); margin: 0 0 1.5rem; }
+  .gate-field {
+    display: flex; gap: .5rem; flex-wrap: wrap;
+  }
+  .gate-field input {
+    flex: 1 1 180px;
+    padding: 13px 18px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(23,63,79,.22);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--navy);
+    background: #fff;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .gate-field input:focus { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(23,107,107,.12); }
+  .gate-field input::placeholder { text-transform: none; letter-spacing: 0; font-weight: 400; color: #9aacb1; }
+  .gate-field button { flex: none; white-space: nowrap; }
+  .gate-error {
+    margin: .75rem 0 0;
+    font-size: .88rem;
+    color: var(--danger, #c0392b);
+    display: none;
+  }
+  .gate-error.visible { display: block; }
+  .gate-divider { margin: 1.5rem 0; border: 0; border-top: 1px solid rgba(23,63,79,.1); }
+  .gate-buy { font-size: .88rem; color: var(--text-soft); }
+  .gate-buy a { color: var(--teal); font-weight: 600; }
+
+  /* Exam hub (shown after unlock) */
+  #exam-hub { display: none; }
+  #exam-hub.visible { display: block; }
+  .exam-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+  .exam-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid rgba(23,63,79,.08);
+    box-shadow: var(--shadow-sm);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: box-shadow .2s, transform .2s;
+  }
+  .exam-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+  .exam-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+  .exam-num {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--teal);
+  }
+  .exam-status-badge {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 99px;
+  }
+  .badge-ready { background: #e7f5ee; color: #1a7a4a; }
+  .badge-soon { background: var(--teal-50); color: var(--teal); }
+  .exam-card h2 { font-size: 1.05rem; margin: 0; }
+  .exam-card p { font-size: .88rem; color: var(--text-soft); margin: 0; flex: 1; }
+  .exam-card .btn { margin-top: auto; }
+  .coming-soon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 11px 22px; border-radius: 999px;
+    border: 1.5px solid rgba(23,63,79,.18);
+    font-family: var(--font-display); font-weight: 600; font-size: .95rem;
+    color: var(--text-soft); background: transparent;
+    cursor: default; opacity: .6; width: 100%; text-align: center;
+  }
+  .unlock-note {
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--teal-50); border-radius: var(--radius);
+    padding: .75rem 1rem; font-size: .85rem; color: var(--teal);
+    margin-bottom: 1rem;
+  }
+  .unlock-note svg { width: 18px; height: 18px; flex: none; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html" aria-label="The Stimulus Control Room, home">
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#E9785D"/><circle cx="32" cy="32" r="21.5" fill="none" stroke="#FAF8F3" stroke-opacity=".55" stroke-width="5" stroke-dasharray="4.8 4.2"/><path d="M32 11.7 46.9 17.1V29.9C46.9 40 40.5 46.9 32 50.7 23.5 46.9 17.1 40 17.1 29.9V17.1Z" fill="#2D6A66" stroke="#FAF8F3" stroke-width="1.6"/><path d="M32 16.5 42.7 20.5V30.1C42.7 37.3 38.4 42.7 32 45.6 25.6 42.7 21.3 37.3 21.3 30.1V20.5Z" fill="#FAF8F3"/><path d="m25.6 30.9 4.8 4.8 9.1-10.1" fill="none" stroke="#E9785D" stroke-width="4.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="brand-name">The Stimulus Control Room<small>RBT&reg; Exam Prep</small></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu"><span></span><span></span><span></span></button>
+    <nav id="primary-nav" class="primary-nav" aria-label="Main">
+      <ul class="nav-list">
+        <li class="nav-home"><a href="index.html">Home</a></li>
+        <li><a href="rbt-practice-test/">Practice Test</a></li>
+        <li><a href="practice.html">Quizzes</a></li>
+        <li><a href="safmeds.html">SAFMEDS</a></li>
+        <li><a href="exam-guide.html">Study Guide</a></li>
+        <li><a href="full-exams.html">Full Exams</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="feedback.html">Feedback</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <a class="btn btn-primary btn-sm nav-cta" href="quiz.html?set=mock">Free Mock Exam <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="quiz-shell">
+    <div class="blob blob-sage" style="width:360px;height:360px;left:-140px;top:40px" aria-hidden="true"></div>
+    <div class="container">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <ol><li><a href="index.html">Home</a></li><li aria-current="page">My Exams</li></ol>
+      </nav>
+
+      <!-- ACCESS CODE GATE -->
+      <div id="exam-gate">
+        <div class="gate-card">
+          <div class="gate-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h1>Enter your access code</h1>
+          <p>You received a code in your purchase confirmation email. Enter it below to unlock your full mock exams.</p>
+          <div class="gate-field">
+            <input type="text" id="code-input" placeholder="Your access code" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Access code">
+            <button class="btn btn-primary" id="unlock-btn" type="button">Unlock</button>
+          </div>
+          <p class="gate-error" id="gate-error" role="alert">That code doesn&rsquo;t match. Check your confirmation email and try again.</p>
+          <hr class="gate-divider">
+          <p class="gate-buy">Don&rsquo;t have a code? <a href="full-exams.html">Purchase access &rarr;</a></p>
+        </div>
+      </div>
+
+      <!-- EXAM HUB (shown after unlock) -->
+      <div id="exam-hub">
+        <div class="unlock-note" aria-live="polite">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Unlocked &mdash; your exams are ready below. This browser will stay unlocked.
+        </div>
+        <span class="eyebrow">My full mock exams</span>
+        <h1 style="margin:.25rem 0 .5rem">Full-Length RBT<sup class="reg">&reg;</sup> Mock Exams</h1>
+        <p class="lead" style="max-width:52ch">75 questions &middot; timed &middot; score report by section. Each exam uses a different set of questions drawn from all six sections of the 2026 RBT<sup class="reg">&reg;</sup> Test Content Outline.</p>
+
+        <div class="exam-grid">
+          <!-- Exam 1 -->
+          <article class="exam-card">
+            <div class="exam-card-top">
+              <span class="exam-num">01</span>
+              <span class="exam-status-badge badge-ready">Ready</span>
+            </div>
+            <h2>Full Mock Exam 1</h2>
+            <p>75 questions covering all six RBT task list sections. 90-minute timer. Detailed score report when you finish.</p>
+            <a class="btn btn-primary" href="quiz.html?set=full1">Start exam 1 <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></a>
+          </article>
+
+          <!-- Exam 2 -->
+          <article class="exam-card">
+            <div class="exam-card-top">
+              <span class="exam-num">02</span>
+              <span class="exam-status-badge badge-soon">Coming soon</span>
+            </div>
+            <h2>Full Mock Exam 2</h2>
+            <p>A second full set of 75 questions &mdash; different questions, same format. Available soon.</p>
+            <span class="coming-soon-btn">Coming soon</span>
+          </article>
+
+          <!-- Exam 3 -->
+          <article class="exam-card">
+            <div class="exam-card-top">
+              <span class="exam-num">03</span>
+              <span class="exam-status-badge badge-soon">Coming soon</span>
+            </div>
+            <h2>Full Mock Exam 3</h2>
+            <p>Third full exam in the series. New questions, same 90-minute format. Available soon.</p>
+            <span class="coming-soon-btn">Coming soon</span>
+          </article>
+        </div>
+
+        <p style="margin-top:2rem;font-size:.85rem;color:var(--text-soft)">
+          Questions? Email <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a> &nbsp;&middot;&nbsp;
+          <button id="reset-access" style="background:none;border:none;color:var(--text-soft);font-size:.85rem;cursor:pointer;text-decoration:underline;padding:0">Reset access code</button>
+        </p>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <svg class="footer-watermark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#E9785D"/><circle cx="32" cy="32" r="21.5" fill="none" stroke="#FAF8F3" stroke-opacity=".55" stroke-width="5" stroke-dasharray="4.8 4.2"/><path d="M32 11.7 46.9 17.1V29.9C46.9 40 40.5 46.9 32 50.7 23.5 46.9 17.1 40 17.1 29.9V17.1Z" fill="#2D6A66" stroke="#FAF8F3" stroke-width="1.6"/><path d="M32 16.5 42.7 20.5V30.1C42.7 37.3 38.4 42.7 32 45.6 25.6 42.7 21.3 37.3 21.3 30.1V20.5Z" fill="#FAF8F3"/><path d="m25.6 30.9 4.8 4.8 9.1-10.1" fill="none" stroke="#E9785D" stroke-width="4.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="container">
+    <p style="text-align:center;color:#BFD3CF;font-size:.88rem;padding:2rem 0">&copy; 2025 The Stimulus Control Room, LLC &mdash; Not affiliated with the BACB&reg;</p>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script>
+(function () {
+  // ── Configuration ──────────────────────────────────────────────
+  var VALID_CODE = 'MOCKRBT2026';   // change this anytime — update Creem confirmation email to match
+  var STORAGE_KEY = 'scr_exam_access';
+  // ───────────────────────────────────────────────────────────────
+
+  var gate = document.getElementById('exam-gate');
+  var hub  = document.getElementById('exam-hub');
+  var input = document.getElementById('code-input');
+  var btn   = document.getElementById('unlock-btn');
+  var err   = document.getElementById('gate-error');
+  var reset = document.getElementById('reset-access');
+
+  function unlock() {
+    gate.style.display = 'none';
+    hub.classList.add('visible');
+  }
+
+  // Already unlocked in this browser?
+  try {
+    if (localStorage.getItem(STORAGE_KEY) === 'true') { unlock(); return; }
+  } catch(e) {}
+
+  // Handle unlock button
+  btn.addEventListener('click', function () {
+    var entered = input.value.trim().toUpperCase();
+    if (entered === VALID_CODE) {
+      try { localStorage.setItem(STORAGE_KEY, 'true'); } catch(e) {}
+      err.classList.remove('visible');
+      unlock();
+    } else {
+      err.classList.add('visible');
+      input.focus();
+      input.select();
+    }
+  });
+
+  // Allow Enter key
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') btn.click();
+  });
+
+  // Reset link (lets them re-enter a new code)
+  if (reset) {
+    reset.addEventListener('click', function () {
+      try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+      hub.classList.remove('visible');
+      gate.style.display = '';
+      input.value = '';
+      input.focus();
+    });
+  }
+})();
+</script>
+</body>
+</html>
