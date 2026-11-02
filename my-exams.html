@@ -253,6 +253,7 @@
   var BUNDLE_CODE = 'BUNDLE2026';
   var EXAM_KEY    = 'scr_exam_access';
   var GUIDE_KEY   = 'scr_guide_access';
+  var BUNDLE_KEY  = 'scr_bundle_access';
 
   var gate  = document.getElementById('exam-gate');
   var hub   = document.getElementById('exam-hub');
@@ -262,7 +263,10 @@
 
   function unlock(isBundle) {
     try { localStorage.setItem(EXAM_KEY, 'true'); } catch(e) {}
-    if (isBundle) { try { localStorage.setItem(GUIDE_KEY, 'true'); } catch(e) {} }
+    if (isBundle) {
+      try { localStorage.setItem(GUIDE_KEY,  'true'); } catch(e) {}
+      try { localStorage.setItem(BUNDLE_KEY, 'true'); } catch(e) {}
+    }
     gate.style.display = 'none';
     hub.classList.add('visible');
   }

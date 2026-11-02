@@ -167,14 +167,14 @@
 
       <!-- GUIDE HUB (shown after unlock) -->
       <div id="guide-hub">
-        <div class="unlock-note" aria-live="polite">
+        <div class="unlock-note" id="unlock-note" aria-live="polite">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          Unlocked &mdash; your study guide is ready below. This browser will stay unlocked.
+          <span id="unlock-msg">Unlocked &mdash; your study guide is ready below. This browser will stay unlocked.</span>
         </div>
 
-        <span class="eyebrow">My study guide</span>
-        <h1 style="margin:.25rem 0 .5rem">RBT<sup class="reg">&reg;</sup> Study Guide</h1>
-        <p class="lead" style="max-width:52ch">Your complete study guide for the RBT&reg; 3rd Edition Test Content Outline. Download it once and study anywhere &mdash; online, offline, or printed.</p>
+        <span class="eyebrow" id="hub-eyebrow">My study guide</span>
+        <h1 style="margin:.25rem 0 .5rem" id="hub-title">RBT<sup class="reg">&reg;</sup> Study Guide</h1>
+        <p class="lead" id="hub-lead" style="max-width:52ch">Your complete study guide for the RBT&reg; 3rd Edition Test Content Outline. Download it once and study anywhere &mdash; online, offline, or printed.</p>
 
         <div class="guide-card">
           <div class="guide-card-top">
@@ -200,6 +200,36 @@
           </div>
         </div>
 
+        <!-- SAFMEDS card — shown only for bundle buyers -->
+        <div class="guide-card" id="safmeds-card" style="display:none;margin-top:1.5rem">
+          <div class="guide-card-top">
+            <div class="guide-thumb" aria-hidden="true" style="background:linear-gradient(135deg,#E9785D,#c05a42)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div class="guide-meta">
+              <h2>SAFMEDS Flashcard Deck &mdash; 79 Cards</h2>
+              <p>The Stimulus Control Room &mdash; 2026 edition</p>
+            </div>
+          </div>
+          <div class="guide-details">
+            <span class="pill pill-light">79 terms</span>
+            <span class="pill pill-light">All 6 sections</span>
+            <span class="pill pill-light">PDF &mdash; 1.1 MB</span>
+          </div>
+          <div class="btn-row">
+            <a class="btn btn-primary" href="assets/downloads/rbt-safmeds-cards.pdf" download="RBT-SAFMEDS-Cards.pdf">
+              <svg aria-hidden="true" style="width:18px;height:18px;margin-right:.4em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download SAFMEDS Cards
+            </a>
+            <a class="btn btn-outline" href="https://docs.google.com/viewer?url=https://thestimuluscontrolroom.com/assets/downloads/rbt-safmeds-cards.pdf" target="_blank" rel="noopener">Open in browser</a>
+          </div>
+        </div>
+
+        <!-- Link to exams for bundle buyers -->
+        <div id="bundle-exams-link" style="display:none;margin-top:1.5rem">
+          <a class="btn btn-outline" href="my-exams.html">Go to My Mock Exams &rarr;</a>
+        </div>
+
         <p style="margin-top:2rem;font-size:.85rem;color:var(--text-soft)">
           Questions? Email <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a>
         </p>
@@ -219,10 +249,11 @@
 <script src="assets/js/main.js"></script>
 <script>
 (function () {
-  var GUIDE_CODE  = 'RBTSTUDY2026';
-  var BUNDLE_CODE = 'BUNDLE2026';
-  var GUIDE_KEY   = 'scr_guide_access';
-  var EXAM_KEY    = 'scr_exam_access';
+  var GUIDE_CODE   = 'RBTSTUDY2026';
+  var BUNDLE_CODE  = 'BUNDLE2026';
+  var GUIDE_KEY    = 'scr_guide_access';
+  var EXAM_KEY     = 'scr_exam_access';
+  var BUNDLE_KEY   = 'scr_bundle_access';
 
   var gate  = document.getElementById('guide-gate');
   var hub   = document.getElementById('guide-hub');
@@ -230,11 +261,30 @@
   var btn   = document.getElementById('unlock-btn');
   var err   = document.getElementById('gate-error');
 
+  function showBundleExtras() {
+    var safmedsCard = document.getElementById('safmeds-card');
+    var bundleLink  = document.getElementById('bundle-exams-link');
+    var unlockMsg   = document.getElementById('unlock-msg');
+    var eyebrow     = document.getElementById('hub-eyebrow');
+    var title       = document.getElementById('hub-title');
+    var lead        = document.getElementById('hub-lead');
+    if (safmedsCard) safmedsCard.style.display = '';
+    if (bundleLink)  bundleLink.style.display  = '';
+    if (unlockMsg)   unlockMsg.textContent      = 'Unlocked — your study materials are ready below. This browser will stay unlocked.';
+    if (eyebrow)     eyebrow.textContent        = 'My study materials';
+    if (title)       title.innerHTML            = 'RBT<sup class="reg">&reg;</sup> Study Guide &amp; SAFMEDS';
+    if (lead)        lead.textContent           = 'Your complete bundle for the RBT® 3rd Edition Test Content Outline. Download both files and study anywhere — online, offline, or printed.';
+  }
+
   function unlock(isBundle) {
     try { localStorage.setItem(GUIDE_KEY, 'true'); } catch(e) {}
-    if (isBundle) { try { localStorage.setItem(EXAM_KEY, 'true'); } catch(e) {} }
+    if (isBundle) {
+      try { localStorage.setItem(EXAM_KEY,   'true'); } catch(e) {}
+      try { localStorage.setItem(BUNDLE_KEY, 'true'); } catch(e) {}
+    }
     gate.style.display = 'none';
     hub.classList.add('visible');
+    if (isBundle) showBundleExtras();
   }
 
   // Auto-unlock via URL parameter
@@ -250,7 +300,9 @@
 
   // Already unlocked?
   try {
-    if (localStorage.getItem(GUIDE_KEY) === 'true') { unlock(false); return; }
+    var hasGuide  = localStorage.getItem(GUIDE_KEY)  === 'true';
+    var hasBundle = localStorage.getItem(BUNDLE_KEY) === 'true';
+    if (hasGuide) { unlock(hasBundle); return; }
   } catch(e) {}
 
   // Handle unlock button
