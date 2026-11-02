@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My RBT Study Guide | The Stimulus Control Room</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+  #guide-gate {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .gate-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(23,63,79,.07);
+    padding: clamp(2rem, 5vw, 3.5rem);
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+  }
+  .gate-icon {
+    width: 56px; height: 56px;
+    background: var(--teal-50);
+    border-radius: 16px;
+    display: grid; place-items: center;
+    margin: 0 auto 1.5rem;
+    color: var(--teal);
+  }
+  .gate-icon svg { width: 28px; height: 28px; }
+  .gate-card h1 { font-size: 1.6rem; margin: 0 0 .5rem; }
+  .gate-card p { color: var(--text-soft); margin: 0 0 1.5rem; }
+  .gate-field {
+    display: flex; gap: .5rem; flex-wrap: wrap;
+  }
+  .gate-field input {
+    flex: 1 1 180px;
+    padding: 13px 18px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(23,63,79,.22);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--navy);
+    background: #fff;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .gate-field input:focus { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(23,107,107,.12); }
+  .gate-field input::placeholder { text-transform: none; letter-spacing: 0; font-weight: 400; color: #9aacb1; }
+  .gate-field button { flex: none; white-space: nowrap; }
+  .gate-error {
+    margin: .75rem 0 0;
+    font-size: .88rem;
+    color: var(--danger, #c0392b);
+    display: none;
+  }
+  .gate-error.visible { display: block; }
+  .gate-divider { margin: 1.5rem 0; border: 0; border-top: 1px solid rgba(23,63,79,.1); }
+  .gate-buy { font-size: .88rem; color: var(--text-soft); }
+  .gate-buy a { color: var(--teal); font-weight: 600; }
+
+  #guide-hub { display: none; }
+  #guide-hub.visible { display: block; }
+
+  .unlock-note {
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--teal-50); border-radius: var(--radius);
+    padding: .75rem 1rem; font-size: .85rem; color: var(--teal);
+    margin-bottom: 1.5rem;
+  }
+  .unlock-note svg { width: 18px; height: 18px; flex: none; }
+
+  .guide-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(23,63,79,.08);
+    box-shadow: var(--shadow);
+    padding: clamp(2rem, 5vw, 3rem);
+    max-width: 640px;
+    margin-top: 2rem;
+  }
+  .guide-card-top {
+    display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem;
+  }
+  .guide-thumb {
+    width: 64px; height: 80px; flex: none;
+    background: linear-gradient(135deg, var(--teal), var(--teal-dark, #0f4a4a));
+    border-radius: 8px;
+    display: grid; place-items: center;
+    color: #fff;
+  }
+  .guide-thumb svg { width: 32px; height: 32px; }
+  .guide-meta h2 { font-size: 1.2rem; margin: 0 0 .25rem; }
+  .guide-meta p { font-size: .88rem; color: var(--text-soft); margin: 0; }
+  .guide-details {
+    display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem;
+  }
+  .guide-details .pill { font-size: .8rem; }
+  .guide-card .btn-row { display: flex; flex-wrap: wrap; gap: .75rem; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html" aria-label="The Stimulus Control Room, home">
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#E9785D"/><circle cx="32" cy="32" r="21.5" fill="none" stroke="#FAF8F3" stroke-opacity=".55" stroke-width="5" stroke-dasharray="4.8 4.2"/><path d="M32 11.7 46.9 17.1V29.9C46.9 40 40.5 46.9 32 50.7 23.5 46.9 17.1 40 17.1 29.9V17.1Z" fill="#2D6A66" stroke="#FAF8F3" stroke-width="1.6"/><path d="M32 16.5 42.7 20.5V30.1C42.7 37.3 38.4 42.7 32 45.6 25.6 42.7 21.3 37.3 21.3 30.1V20.5Z" fill="#FAF8F3"/><path d="m25.6 30.9 4.8 4.8 9.1-10.1" fill="none" stroke="#E9785D" stroke-width="4.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="brand-name">The Stimulus Control Room<small>RBT&reg; Exam Prep</small></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu"><span></span><span></span><span></span></button>
+    <nav id="primary-nav" class="primary-nav" aria-label="Main">
+      <ul class="nav-list">
+        <li class="nav-home"><a href="index.html">Home</a></li>
+        <li><a href="rbt-practice-test/">Practice Test</a></li>
+        <li><a href="practice.html">Quizzes</a></li>
+        <li><a href="safmeds.html">SAFMEDS</a></li>
+        <li><a href="exam-guide.html">Study Guide</a></li>
+        <li><a href="full-exams.html">Shop</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="feedback.html">Feedback</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <a class="btn btn-primary btn-sm nav-cta" href="quiz.html?set=mock">Free Sample Exam <svg aria-hidden="true" class="arrow"><use href="assets/img/icons.svg#i-arrow"></use></svg></a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="quiz-shell">
+    <div class="blob blob-sage" style="width:360px;height:360px;left:-140px;top:40px" aria-hidden="true"></div>
+    <div class="container">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <ol><li><a href="index.html">Home</a></li><li aria-current="page">My Study Guide</li></ol>
+      </nav>
+
+      <!-- ACCESS CODE GATE -->
+      <div id="guide-gate">
+        <div class="gate-card">
+          <div class="gate-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h1>Enter your access code</h1>
+          <p>You received a code in your purchase confirmation email. Enter it below to unlock your study guide.</p>
+          <div class="gate-field">
+            <input type="text" id="code-input" placeholder="Your access code" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Access code">
+            <button class="btn btn-primary" id="unlock-btn" type="button">Unlock</button>
+          </div>
+          <p class="gate-error" id="gate-error" role="alert">That code doesn&rsquo;t match. Check your confirmation email and try again.</p>
+          <hr class="gate-divider">
+          <p class="gate-buy">Don&rsquo;t have a code? <a href="full-exams.html">Purchase access &rarr;</a></p>
+        </div>
+      </div>
+
+      <!-- GUIDE HUB (shown after unlock) -->
+      <div id="guide-hub">
+        <div class="unlock-note" aria-live="polite">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Unlocked &mdash; your study guide is ready below. This browser will stay unlocked.
+        </div>
+
+        <span class="eyebrow">My study guide</span>
+        <h1 style="margin:.25rem 0 .5rem">RBT<sup class="reg">&reg;</sup> Study Guide</h1>
+        <p class="lead" style="max-width:52ch">Your complete study guide for the RBT&reg; 3rd Edition Test Content Outline. Download it once and study anywhere &mdash; online, offline, or printed.</p>
+
+        <div class="guide-card">
+          <div class="guide-card-top">
+            <div class="guide-thumb" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <div class="guide-meta">
+              <h2>RBT 3rd Edition Test Content Study Guide</h2>
+              <p>The Stimulus Control Room &mdash; 2026 edition</p>
+            </div>
+          </div>
+          <div class="guide-details">
+            <span class="pill pill-light">3rd Edition TCO</span>
+            <span class="pill pill-light">All 6 sections</span>
+            <span class="pill pill-light">PDF &mdash; 2.5 MB</span>
+          </div>
+          <div class="btn-row">
+            <a class="btn btn-primary" href="assets/downloads/rbt-study-guide.pdf" download="RBT-Study-Guide-3rd-Edition.pdf">
+              <svg aria-hidden="true" style="width:18px;height:18px;margin-right:.4em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Study Guide
+            </a>
+            <a class="btn btn-outline" href="assets/downloads/rbt-study-guide.pdf" target="_blank" rel="noopener">Open in browser</a>
+          </div>
+        </div>
+
+        <p style="margin-top:2rem;font-size:.85rem;color:var(--text-soft)">
+          Questions? Email <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a>
+        </p>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <svg class="footer-watermark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#E9785D"/><circle cx="32" cy="32" r="21.5" fill="none" stroke="#FAF8F3" stroke-opacity=".55" stroke-width="5" stroke-dasharray="4.8 4.2"/><path d="M32 11.7 46.9 17.1V29.9C46.9 40 40.5 46.9 32 50.7 23.5 46.9 17.1 40 17.1 29.9V17.1Z" fill="#2D6A66" stroke="#FAF8F3" stroke-width="1.6"/><path d="M32 16.5 42.7 20.5V30.1C42.7 37.3 38.4 42.7 32 45.6 25.6 42.7 21.3 37.3 21.3 30.1V20.5Z" fill="#FAF8F3"/><path d="m25.6 30.9 4.8 4.8 9.1-10.1" fill="none" stroke="#E9785D" stroke-width="4.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="container">
+    <p style="text-align:center;color:#BFD3CF;font-size:.88rem;padding:2rem 0">&copy; 2025 The Stimulus Control Room, LLC &mdash; Not affiliated with the BACB&reg;</p>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script>
+(function () {
+  var GUIDE_CODE  = 'RBTSTUDY2026';
+  var BUNDLE_CODE = 'BUNDLE2026';
+  var GUIDE_KEY   = 'scr_guide_access';
+  var EXAM_KEY    = 'scr_exam_access';
+
+  var gate  = document.getElementById('guide-gate');
+  var hub   = document.getElementById('guide-hub');
+  var input = document.getElementById('code-input');
+  var btn   = document.getElementById('unlock-btn');
+  var err   = document.getElementById('gate-error');
+
+  function unlock(isBundle) {
+    try { localStorage.setItem(GUIDE_KEY, 'true'); } catch(e) {}
+    if (isBundle) { try { localStorage.setItem(EXAM_KEY, 'true'); } catch(e) {} }
+    gate.style.display = 'none';
+    hub.classList.add('visible');
+  }
+
+  // Auto-unlock via URL parameter
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var code = params.get('unlock');
+    if (code === GUIDE_CODE || code === BUNDLE_CODE) {
+      history.replaceState(null, '', window.location.pathname);
+      unlock(code === BUNDLE_CODE);
+      return;
+    }
+  } catch(e) {}
+
+  // Already unlocked?
+  try {
+    if (localStorage.getItem(GUIDE_KEY) === 'true') { unlock(false); return; }
+  } catch(e) {}
+
+  // Handle unlock button
+  btn.addEventListener('click', function () {
+    var entered = input.value.trim().toUpperCase();
+    if (entered === GUIDE_CODE || entered === BUNDLE_CODE) {
+      err.classList.remove('visible');
+      unlock(entered === BUNDLE_CODE);
+    } else {
+      err.classList.add('visible');
+      input.focus();
+      input.select();
+    }
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') btn.click();
+  });
+})();
+</script>
+</body>
+</html>

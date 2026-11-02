@@ -249,46 +249,46 @@
 <script src="assets/js/main.js"></script>
 <script>
 (function () {
-  // ── Configuration ──────────────────────────────────────────────
-  var VALID_CODE = 'MOCKRBT2026';   // change this anytime — update Creem confirmation email to match
-  var STORAGE_KEY = 'scr_exam_access';
-  // ───────────────────────────────────────────────────────────────
+  var EXAM_CODE   = 'MOCKRBT2026';
+  var BUNDLE_CODE = 'BUNDLE2026';
+  var EXAM_KEY    = 'scr_exam_access';
+  var GUIDE_KEY   = 'scr_guide_access';
 
-  var gate = document.getElementById('exam-gate');
-  var hub  = document.getElementById('exam-hub');
+  var gate  = document.getElementById('exam-gate');
+  var hub   = document.getElementById('exam-hub');
   var input = document.getElementById('code-input');
   var btn   = document.getElementById('unlock-btn');
   var err   = document.getElementById('gate-error');
 
-  function unlock() {
+  function unlock(isBundle) {
+    try { localStorage.setItem(EXAM_KEY, 'true'); } catch(e) {}
+    if (isBundle) { try { localStorage.setItem(GUIDE_KEY, 'true'); } catch(e) {} }
     gate.style.display = 'none';
     hub.classList.add('visible');
   }
 
-  // Auto-unlock via URL parameter (Creem Return URL: ?unlock=MOCKRBT2026)
+  // Auto-unlock via URL parameter
   try {
     var params = new URLSearchParams(window.location.search);
-    if (params.get('unlock') === VALID_CODE) {
-      localStorage.setItem(STORAGE_KEY, 'true');
-      // Clean the code out of the URL so it's not visible or shareable
+    var code = params.get('unlock');
+    if (code === EXAM_CODE || code === BUNDLE_CODE) {
       history.replaceState(null, '', window.location.pathname);
-      unlock();
+      unlock(code === BUNDLE_CODE);
       return;
     }
   } catch(e) {}
 
   // Already unlocked in this browser?
   try {
-    if (localStorage.getItem(STORAGE_KEY) === 'true') { unlock(); return; }
+    if (localStorage.getItem(EXAM_KEY) === 'true') { unlock(false); return; }
   } catch(e) {}
 
   // Handle unlock button
   btn.addEventListener('click', function () {
     var entered = input.value.trim().toUpperCase();
-    if (entered === VALID_CODE) {
-      try { localStorage.setItem(STORAGE_KEY, 'true'); } catch(e) {}
+    if (entered === EXAM_CODE || entered === BUNDLE_CODE) {
       err.classList.remove('visible');
-      unlock();
+      unlock(entered === BUNDLE_CODE);
     } else {
       err.classList.add('visible');
       input.focus();
