@@ -231,8 +231,7 @@
         </div>
 
         <p style="margin-top:2rem;font-size:.85rem;color:var(--text-soft)">
-          Questions? Email <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a> &nbsp;&middot;&nbsp;
-          <button id="reset-access" style="background:none;border:none;color:var(--text-soft);font-size:.85rem;cursor:pointer;text-decoration:underline;padding:0">Reset access code</button>
+          Questions? Email <a href="mailto:contact@thestimuluscontrolroom.com">contact@thestimuluscontrolroom.com</a>
         </p>
       </div>
 
@@ -260,7 +259,6 @@
   var input = document.getElementById('code-input');
   var btn   = document.getElementById('unlock-btn');
   var err   = document.getElementById('gate-error');
-  var reset = document.getElementById('reset-access');
 
   function unlock() {
     gate.style.display = 'none';
@@ -303,16 +301,7 @@
     if (e.key === 'Enter') btn.click();
   });
 
-  // Reset link (lets them re-enter a new code)
-  if (reset) {
-    reset.addEventListener('click', function () {
-      try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
-      hub.classList.remove('visible');
-      gate.style.display = '';
-      input.value = '';
-      input.focus();
-    });
-  }
+
 })();
 </script>
 </body>
