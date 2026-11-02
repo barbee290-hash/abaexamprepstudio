@@ -368,6 +368,7 @@
           '<p class="lead">' + esc(levelMsg) + "</p>" +
           '<div class="btn-row">' +
             '<button type="button" class="btn btn-primary" data-r="retake">' + icon("i-refresh") + " Retake exam</button>" +
+            '<a class="btn btn-teal" href="practice.html">Practice weak areas ' + icon("i-arrow", "arrow") + "</a>" +
             '<a class="btn btn-outline" href="my-exams.html">Back to My Exams</a>' +
           "</div>" +
         "</div>" +
@@ -402,6 +403,8 @@
         '<p class="why">' + esc(q.e) + "</p></li>";
     });
     html += "</ol>" +
+      '<div class="cta-band mt-3"><div><h2 style="font-size:1.6rem">Want to go deeper?</h2><p>The RBT Study Guide walks through every task list item with examples. SAFMEDS cards help you lock in the vocabulary at speed.</p></div>' +
+      '<div class="btn-row"><a class="btn btn-light" href="full-exams.html">See all study tools</a><a class="btn btn-ghost-light" style="--btn-fg:var(--navy-900);border-color:rgba(15,43,54,.35)" href="safmeds.html">Try SAFMEDS free</a></div></div>' +
       '<div class="cta-band mt-3"><div><h2 style="font-size:1.6rem">Found an issue or have a suggestion?</h2><p>Tell us how we can make these exams more useful.</p></div>' +
       '<div class="btn-row"><a class="btn btn-light" href="feedback.html">Leave feedback</a><a class="btn btn-ghost-light" style="--btn-fg:var(--navy-900);border-color:rgba(15,43,54,.35)" href="mailto:contact@thestimuluscontrolroom.com?subject=RBT%20Mock%20Exam%20Feedback">Email us</a></div></div>';
 
