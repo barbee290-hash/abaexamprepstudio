@@ -360,14 +360,14 @@
         '<div class="score-ring" role="img" aria-label="Score ' + pct + ' percent">' +
           '<svg viewBox="0 0 200 200"><circle class="track" cx="100" cy="100" r="88" fill="none" stroke-width="14"/>' +
           '<circle class="bar" cx="100" cy="100" r="88" fill="none" stroke-width="14" stroke-dasharray="' + circumference.toFixed(1) + '" stroke-dashoffset="' + circumference.toFixed(1) + '"/></svg>' +
-          '<div class="center"><div><b data-final="' + pct + '">0%</b><small>' + correct + " of " + SCORED_TOTAL + " scored</small></div></div>' +
+          '<div class="center"><div><b data-final="' + pct + '">0%</b><small>' + correct + " of " + SCORED_TOTAL + " scored</small></div></div>" +
         "</div>" +
         "<div>" +
           '<span class="readiness ' + level + '">' + icon(level === "good" ? "i-check-circle" : "i-target") + levelText + "</span>" +
           "<h1 style=\"font-size:clamp(1.9rem,3.6vw,2.6rem)\">" + (timedOut ? "Time's up! " : "") + "Your results</h1>" +
           '<p class="lead">' + esc(levelMsg) + "</p>" +
           '<div class="btn-row">' +
-            '<button type="button" class="btn btn-primary" data-r="retake">' + icon("i-refresh") + " Retake exam</button>' +
+            '<button type="button" class="btn btn-primary" data-r="retake">' + icon("i-refresh") + " Retake exam</button>" +
             '<a class="btn btn-outline" href="my-exams.html">Back to My Exams</a>' +
           "</div>" +
         "</div>" +
