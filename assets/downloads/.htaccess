@@ -1,0 +1,4 @@
+<FilesMatch "\.pdf$">
+  Header set Content-Disposition "inline"
+  Header set Content-Type "application/pdf"
+</FilesMatch>
